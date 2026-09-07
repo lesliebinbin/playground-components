@@ -10,7 +10,7 @@ let createDragBoundFunc;
 beforeAll(async () => {
   const imageAbs = require.resolve("../image");
   const imageUrl = require("node:url").pathToFileURL(imageAbs).href;
-  const imageModule = await import(`${imageUrl}?bun_reload=${Date.now()}`);
+  const imageModule = await import(`${imageUrl}`);
   mapKonvaBrightness = imageModule.mapKonvaBrightness;
   reverseCoordinates = imageModule.reverseCoordinates;
   fixRectToFit = imageModule.fixRectToFit;

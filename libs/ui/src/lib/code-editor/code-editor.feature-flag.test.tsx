@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { ff } from "@humansignal/core";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 import * as cm6Module from "./cm6-code-editor";
 import CodeEditor from "./code-editor";
 

@@ -3,7 +3,7 @@
  * View coverage is largely from Cypress; these tests cover model logic.
  */
 import { types } from "mobx-state-tree";
-import { importModulesWithBunReload } from "./moduleReload";
+import { importModulesForTest } from "./moduleReload";
 
 // Math.unit is used in coordsInside (degrees to radians); not in standard JS.
 const deg2rad = (deg) => (deg * Math.PI) / 180;
@@ -16,7 +16,7 @@ afterAll(() => {
   delete Math.unit;
 });
 
-mockModule("../../tags/object/Image", () => {
+mockModule(jest, "../../tags/object/Image", () => {
   const { types } = require("mobx-state-tree");
   return {
     ImageModel: types
@@ -59,7 +59,7 @@ let EllipseRegionModel;
 let TestRoot;
 
 const loadModels = async () => {
-  const [ellipseMod, imageMod] = await importModulesWithBunReload(["../EllipseRegion", "../../tags/object/Image"]);
+  const [ellipseMod, imageMod] = await importModulesForTest(["../EllipseRegion", "../../tags/object/Image"]);
   const ImageModel = imageMod.ImageModel;
   EllipseRegionModel = ellipseMod.EllipseRegionModel;
 
@@ -225,7 +225,7 @@ describe("EllipseRegion", () => {
 
   describe("Registry region type", () => {
     it("is registered as ellipseregion", () => {
-      const RegistryModule = requireActual("../../core/Registry");
+      const RegistryModule = jest.requireActual("../../core/Registry");
       const Registry = RegistryModule.default ?? RegistryModule;
       const Model = Registry.getModelByTag("ellipseregion");
       expect(Model).toBeDefined();

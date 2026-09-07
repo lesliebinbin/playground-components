@@ -6,7 +6,7 @@ if (typeof globalThis.structuredClone === "undefined") {
   globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
-mockModule("keymaster", () => {
+mockModule(jest, "keymaster", () => {
   let scope = "all";
   const keymaster = () => {};
   keymaster.unbind = () => {};
@@ -106,8 +106,8 @@ describe("RegionStore", () => {
 
   beforeEach(() => {
     const storage = {};
-    getItemSpy = spyOn(window.localStorage, "getItem").mockImplementation((k) => storage[k] ?? null);
-    setItemSpy = spyOn(window.localStorage, "setItem").mockImplementation((k, v) => {
+    getItemSpy = spyOn(Storage.prototype, "getItem").mockImplementation((k) => storage[k] ?? null);
+    setItemSpy = spyOn(Storage.prototype, "setItem").mockImplementation((k, v) => {
       storage[k] = v;
     });
   });

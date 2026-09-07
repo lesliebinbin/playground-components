@@ -1,6 +1,6 @@
 import { types } from "mobx-state-tree";
 import { isFF, FF_DEV_2669, FF_LSDV_E_278 } from "../../../../utils/feature-flags";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 
 const createMockStoreType = (paragraphsModel: any, typesApi = types) => {
   const makeAnnotationStore = () => {

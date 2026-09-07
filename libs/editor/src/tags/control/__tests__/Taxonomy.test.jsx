@@ -65,21 +65,21 @@ const mockStore = {
 };
 mockAnnotation.store = mockStore;
 
-mockModule("../../../components/Infomodal/Infomodal", () => ({
+mockModule(jest, "../../../components/Infomodal/Infomodal", () => ({
   __esModule: true,
   __skipMerge: true,
   default: { error: mock(), warning: mock(), success: mock(), info: mock() },
 }));
 
-mockModule("../../../components/NewTaxonomy/NewTaxonomy", () => ({
+mockModule(jest, "../../../components/NewTaxonomy/NewTaxonomy", () => ({
   NewTaxonomy: () => <div data-testid="new-taxonomy">NewTaxonomy</div>,
 }));
 
-mockModule("../../../components/TaxonomyEcho466/TaxonomyEcho466", () => ({
+mockModule(jest, "../../../components/TaxonomyEcho466/TaxonomyEcho466", () => ({
   TaxonomyEcho466: () => <div data-testid="taxonomy-echo466">TaxonomyEcho466</div>,
 }));
 
-mockModule("../../../components/Taxonomy/Taxonomy", () => ({
+mockModule(jest, "../../../components/Taxonomy/Taxonomy", () => ({
   Taxonomy: () => <div data-testid="legacy-taxonomy">Legacy Taxonomy</div>,
 }));
 

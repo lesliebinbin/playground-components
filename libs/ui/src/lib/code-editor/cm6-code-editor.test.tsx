@@ -17,7 +17,7 @@ let mockHasFocus = true;
 let mockOnChange: ((value: string) => void) | undefined;
 let mockLastDispatchInsert: string | undefined;
 
-mock.module("@uiw/react-codemirror", () => {
+jest.doMock("@uiw/react-codemirror", () => {
   const React = require("react");
   const MockCodeMirror = React.forwardRef(
     (
@@ -70,7 +70,7 @@ mock.module("@uiw/react-codemirror", () => {
     },
   );
 
-  return { default: MockCodeMirror, ExternalChange };
+  return { __esModule: true, default: MockCodeMirror, ExternalChange };
 });
 
 describe("Cm6CodeEditor", () => {

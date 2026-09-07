@@ -12,7 +12,7 @@ import { types } from "mobx-state-tree";
 import BaseTool, { MIN_SIZE, DEFAULT_DIMENSIONS } from "../Base";
 import ToolMixin from "../../mixins/Tool";
 
-mockModule("../../components/Toolbar/Tool", () => {
+mockModule(jest, "../../components/Toolbar/Tool", () => {
   const React = require("react");
   return {
     Tool: ({ ariaLabel, active, onClick }) =>

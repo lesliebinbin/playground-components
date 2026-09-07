@@ -1,7 +1,7 @@
 /**
  * Unit tests for Loader (lib/AudioUltra/Visual/Loader.ts)
  */
-import { Loader } from "../Loader";
+const { Loader } = require("../Loader");
 
 describe("Loader", () => {
   beforeEach(() => {

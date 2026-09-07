@@ -6,7 +6,7 @@ if (typeof globalThis.structuredClone === "undefined") {
   globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
-mockModule("keymaster", () => {
+mockModule(jest, "keymaster", () => {
   let scope = "all";
   const keymaster = () => {};
   keymaster.unbind = () => {};
@@ -33,7 +33,7 @@ spyOn(ToolsManager, "getInstance").mockReturnValue({
 const mockInvoke = mock();
 const mockInvokeFirst = mock();
 const mockHasEvent = mock(() => false);
-mockModule("../../../components/Infomodal/Infomodal", () => ({
+mockModule(jest, "../../../components/Infomodal/Infomodal", () => ({
   __esModule: true,
   __skipMerge: true,
   default: {

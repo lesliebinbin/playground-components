@@ -45,8 +45,8 @@ beforeEach(() => {
   });
 });
 
-mockModule("mobx", () => {
-  const actual = requireActual("mobx");
+mockModule(jest, "mobx", () => {
+  const actual = jest.requireActual("mobx");
   return {
     ...actual,
     observe: (target, key, handler, fireImmediately) => {
@@ -69,13 +69,13 @@ const mockDomManager = {
   removeSpans: mock(),
   getText: mock(() => ""),
 };
-mockModule("../domManager", () => ({ __esModule: true, default: mock(() => mockDomManager) }));
+mockModule(jest, "../domManager", () => ({ __esModule: true, default: mock(() => mockDomManager) }));
 
 let mockDocRef = null;
-mockModule("../../../../utils", () => {
+mockModule(jest, "../../../../utils", () => {
   let actual;
   try {
-    actual = requireActual("../../../../utils");
+    actual = jest.requireActual("../../../../utils");
   } catch {
     actual = {
       default: {
@@ -122,7 +122,7 @@ mockModule("../../../../utils", () => {
               }
             }
           } catch {
-            // Prevent async callback errors from leaking between tests in Bun.
+            // Prevent async callback errors from leaking between tests in the previous runner.
           }
           try {
             opts?.beforeCleanup?.();
@@ -135,7 +135,7 @@ mockModule("../../../../utils", () => {
   };
 });
 
-mockModule("xpath-range", () => ({
+mockModule(jest, "xpath-range", () => ({
   fromRange: () => ({ _range: null, text: "", isText: true }),
 }));
 

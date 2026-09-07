@@ -4,7 +4,7 @@ let guidGenerator;
 beforeAll(async () => {
   const uniqueAbs = require.resolve("../unique");
   const uniqueUrl = require("node:url").pathToFileURL(uniqueAbs).href;
-  const uniqueModule = await import(`${uniqueUrl}?bun_reload=${Date.now()}`);
+  const uniqueModule = await import(`${uniqueUrl}`);
   guidGenerator = uniqueModule.guidGenerator;
 });
 

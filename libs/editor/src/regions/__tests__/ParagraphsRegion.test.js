@@ -5,11 +5,11 @@
 import { types } from "mobx-state-tree";
 
 const mockRemoveSpans = mock();
-mockModule("../../utils", () => ({
-  ...(requireActual("../../utils") ?? {}),
+mockModule(jest, "../../utils", () => ({
+  ...(jest.requireActual("../../utils") ?? {}),
   __esModule: true,
   default: {
-    ...((requireActual("../../utils") ?? {}).default ?? {}),
+    ...((jest.requireActual("../../utils") ?? {}).default ?? {}),
     HTML: {
       removeSpans: (...args) => mockRemoveSpans(...args),
     },

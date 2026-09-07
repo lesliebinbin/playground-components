@@ -4,9 +4,9 @@
  * Use for DOM-only and serialization tests without a real browser.
  */
 import { render, screen } from "@testing-library/react";
+import { EventInvoker } from "../utils/events";
 import defaultOptions from "../defaultOptions";
 import { configureStore } from "../configureStore";
-import App from "../components/App/App";
 
 export type RenderEditorOptions = {
   config: string;
@@ -31,6 +31,8 @@ const defaultTask = {
  * Returns the store, container, RTL screen helpers, and a serialize() helper for the selected annotation.
  */
 export async function renderEditor(options: RenderEditorOptions) {
+  // App registers object, control, and visual tags before the store parses XML.
+  const { default: App } = await import("../components/App/App");
   const { config, task = defaultTask, interfaces = defaultOptions.interfaces } = options;
   const params = {
     ...defaultOptions,
@@ -44,7 +46,7 @@ export async function renderEditor(options: RenderEditorOptions) {
     },
   };
 
-  const { store } = await configureStore(params);
+  const { store } = await configureStore(params, new EventInvoker());
   (window as Window & { Htx?: typeof store }).Htx = store;
   const container = document.createElement("div");
   document.body.appendChild(container);

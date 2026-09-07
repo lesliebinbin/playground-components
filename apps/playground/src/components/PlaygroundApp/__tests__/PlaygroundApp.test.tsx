@@ -2,7 +2,7 @@ import { render, waitFor } from "@testing-library/react";
 import { PlaygroundApp } from "../PlaygroundApp";
 import * as jotaiModule from "jotai";
 import { configAtom, errorAtom, loadingAtom } from "../../../atoms/configAtoms";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 import * as editorPanelModule from "../../EditorPanel";
 import * as previewPanelModule from "../../PreviewPanel";
 import * as toastModule from "@humansignal/ui/lib/toast/toast";

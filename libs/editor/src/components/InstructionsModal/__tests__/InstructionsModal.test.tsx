@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { InstructionsModal } from "../InstructionsModal";
 import { FF_MODAL_WINDOW_APP_CHROME } from "@humansignal/core/lib/utils/feature-flags";
 

@@ -1,5 +1,22 @@
 # Prefix-path deployment TODO
 
+## Implementation status
+
+Implemented with `PUBLIC_BASE_PATH`, defaulting to `/` when unset. Shared path
+validation, all three build configurations, document bases, favicons, the local
+static server, and deployment documentation now support the prefix.
+
+Validation passed for root and `/custom_label/` builds using the installed
+dependencies: generated HTML/CSS asset references resolve on disk, and headless
+Chrome loaded all three surfaces (including a lazy-loaded Storybook story) with
+no local asset 404s or requests outside the mount. The three focused path tests
+also pass (`node tools/public-base-path.test.mjs`). After the unit-test migration,
+`npm ci --offline`, `npm test`, and `npm run build` also pass.
+Biome checking is blocked by the existing configuration's incompatibility with
+the installed Biome version.
+
+The original context and implementation plan follow for reference.
+
 ## Context
 
 This repository began as the `web/` directory from
@@ -14,6 +31,9 @@ from the Python/Django application.
   dependencies and `npm run <script>` for project commands.
 - Replaced `bun.lock` with `package-lock.json` and removed Bun-specific
   runnable workflows.
+- Migrated the retained unit tests and shared browser/mock setup to Jest on
+  Node. `npm test` runs unit and build-configuration tests; Cypress retains
+  its separate integration-test command.
 - Removed the Django-hosted `apps/labelstudio` application, its Cypress e2e
   app, Django manifest generation, and service-worker copy tooling. They
   depended on the parent Label Studio backend checkout and cannot be deployed

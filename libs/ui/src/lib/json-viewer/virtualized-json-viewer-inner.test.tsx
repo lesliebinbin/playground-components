@@ -31,6 +31,7 @@ const FIT_2107_REVIEW_DIMENSIONS_PATH = "$.annotations[0].result[0].value.reactc
 
 async function flushDeepSearchSchedule() {
   await act(async () => {
+    jest.runAllTicks();
     await Promise.resolve();
   });
 }

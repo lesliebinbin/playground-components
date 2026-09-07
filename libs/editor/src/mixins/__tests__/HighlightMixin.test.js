@@ -20,16 +20,16 @@ const mockSpan = (overrides = {}) => {
   return span;
 };
 
-mockModule("../../utils", () => ({
-  ...(requireActual("../../utils") ?? {}),
+mockModule(jest, "../../utils", () => ({
+  ...(jest.requireActual("../../utils") ?? {}),
   __esModule: true,
   default: {
-    ...((requireActual("../../utils") ?? {}).default ?? {}),
+    ...((jest.requireActual("../../utils") ?? {}).default ?? {}),
     Colors: {
-      ...(((requireActual("../../utils") ?? {}).default ?? {}).Colors ?? {}),
+      ...(((jest.requireActual("../../utils") ?? {}).default ?? {}).Colors ?? {}),
       getScaleGradient:
-        (requireActual("../../utils") ?? {}).Colors?.getScaleGradient ??
-        ((requireActual("../../utils") ?? {}).default ?? {}).Colors?.getScaleGradient,
+        (jest.requireActual("../../utils") ?? {}).Colors?.getScaleGradient ??
+        ((jest.requireActual("../../utils") ?? {}).default ?? {}).Colors?.getScaleGradient,
       convertToRGBA: mock((color, alpha) => (color ? `rgba(0,0,0,${alpha})` : "rgba(210,147,93,0.3)")),
       contrastColor: mock(() => "#fff"),
     },

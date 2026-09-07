@@ -4,7 +4,7 @@
  */
 import { types } from "mobx-state-tree";
 
-mockModule("../../../tags/object/Audio/model", () => {
+mockModule(jest, "../../../tags/object/Audio/model", () => {
   const { types } = require("mobx-state-tree");
   return {
     AudioModel: types

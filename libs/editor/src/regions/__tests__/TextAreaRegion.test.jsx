@@ -7,7 +7,7 @@ const mockValidateText = mock(() => true);
 const mockUpdateLeadTime = mock();
 const mockCountTime = mock();
 
-mockModule("../../tags/control/TextArea/TextArea", () => {
+mockModule(jest, "../../tags/control/TextArea/TextArea", () => {
   const { types: t } = require("mobx-state-tree");
   return {
     TextAreaModel: t

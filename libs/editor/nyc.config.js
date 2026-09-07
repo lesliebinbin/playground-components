@@ -11,7 +11,6 @@ const defaultExclude = [
 
   /* Exclude common development tool configuration files */
   "**/{ava,babel,nyc}.config.{js,cjs,mjs}",
-  "**/bun.config.{js,cjs,mjs,ts}",
   "**/{karma,rollup,webpack}.config.js",
   "**/.{eslint,mocha}rc.{js,cjs}",
 ];

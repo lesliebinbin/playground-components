@@ -23,7 +23,7 @@ const mockManager = {
 
 import ToolsManager from "../../../../tools/Manager";
 
-mockModule("../../../../tools", () => ({
+mockModule(jest, "../../../../tools", () => ({
   Selection: { create: () => ({}) },
   Zoom: { create: () => ({}) },
   Brightness: { create: () => ({}) },
@@ -161,25 +161,8 @@ function setImageContainerSize(image, width, height) {
 
 describe("Image model", () => {
   beforeAll(async () => {
-    // Runs AFTER all test files have loaded and applied their module-level mocks.
-    // window.isFF is the REAL isFF — the real module assigned it via Object.assign(window, {isFF}).
-    // Mock modules are plain objects and don't run side-effect code, so window.isFF survived.
-    const realIsFF = window.isFF;
-    const mockFF = requireActual("../../../../utils/feature-flags");
-    const ffOverride = { ...mockFF, isFF: realIsFF };
-
-    // Override the feature-flags mock with real isFF through Bun's native API.
-    const { mock: bunMock } = await import("bun:test");
-    const base = new URL("../../../../utils/feature-flags", import.meta.url);
-    const absPath = decodeURIComponent(base.pathname);
-    for (const p of [absPath, `${absPath}.ts`, `${absPath}.js`, base.href, `${base.href}.ts`]) {
-      try {
-        bunMock.module(p, () => ffOverride);
-      } catch {}
-    }
-
     // Load fresh Image.js
-    const mod = await import(`../Image.js?bun_reload=${Date.now()}`);
+    const mod = await import(`../Image.js`);
     ImageModel = mod.ImageModel;
 
     // Build model types using the correctly-loaded ImageModel
@@ -229,8 +212,6 @@ describe("Image model", () => {
     // Re-apply spies every test — preload's afterEach calls mock.restore() which clears them
     spyOn(ToolsManager, "getInstance").mockReturnValue(mockManager);
     spyOn(imageCache, "get").mockReturnValue(null);
-    spyOn(imageCache, "set").mockImplementation(() => undefined);
-    spyOn(imageCache, "has").mockReturnValue(false);
     spyOn(imageCache, "isLoading").mockReturnValue(false);
     spyOn(imageCache, "getPendingLoad").mockReturnValue(null);
     spyOn(imageCache, "load").mockResolvedValue({ blobUrl: "blob:mock" });

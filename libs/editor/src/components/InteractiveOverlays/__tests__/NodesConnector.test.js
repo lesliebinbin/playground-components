@@ -9,7 +9,7 @@ const mockRelationShapeInstance = {
   destroy: mock(),
 };
 
-mockModule("../Geometry", () => ({
+mockModule(jest, "../Geometry", () => ({
   Geometry: {
     getDOMBBox: mock(),
     padding: mock((bbox, pad = 0) => ({

@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, act } from "@testing-library/react";
 import type { VideoRef } from "../VideoCanvas";
 import { FF_VIDEO_FRAME_SEEK_PRECISION } from "../../../utils/feature-flags";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 import * as coreModule from "@humansignal/core";
 import * as useUpdateBufferingModule from "../../../hooks/useUpdateBuffering";
 import * as useLoopRangeModule from "../hooks/useLoopRange";
@@ -10,7 +10,7 @@ import {
   mockModuleAllSpecifiers,
   VIRTUAL_CANVAS_MODULE_SPECIFIERS,
   VIRTUAL_VIDEO_MODULE_SPECIFIERS,
-} from "./videoCanvasBunModuleRegistry";
+} from "./videoCanvasModuleMocks";
 
 const ff = mockFF();
 
@@ -28,7 +28,7 @@ const mockGetContext = mock(() => ({
 let mockVideoEl: Partial<HTMLVideoElement> & { _handlers?: Record<string, (e?: any) => void> };
 let mockCanvasEl: HTMLCanvasElement | null = null;
 
-/** Bun `spyOn().mockImplementation` requires a callable; `forwardRef` returns an object. Register mocks before `VideoCanvas` loads. */
+/** the previous runner `spyOn().mockImplementation` requires a callable; `forwardRef` returns an object. Register mocks before `VideoCanvas` loads. */
 const vct = {
   get mockCanvasEl() {
     return mockCanvasEl;
@@ -72,10 +72,10 @@ beforeAll(async () => {
 
   (globalThis as { __VCTEST__?: typeof vct }).__VCTEST__ = vct;
 
-  // Bun's `mock.module` mutates the Module Record in memory! We MUST shallow copy the exports
+  // the previous runner's `mock.module` mutates the Module Record in memory! We MUST shallow copy the exports
   // so we have a pristine clone of the real module that `mock.module` won't stealthily overwrite.
-  realVirtualCanvas = { ...(requireActual("../VirtualCanvas.tsx") as Record<string, unknown>) };
-  realVirtualVideo = { ...(requireActual("../VirtualVideo.tsx") as Record<string, unknown>) };
+  realVirtualCanvas = { ...(jest.requireActual("../VirtualCanvas.tsx") as Record<string, unknown>) };
+  realVirtualVideo = { ...(jest.requireActual("../VirtualVideo.tsx") as Record<string, unknown>) };
 
   const virtualCanvasExports = {
     VirtualCanvas: React.forwardRef<HTMLCanvasElement, Record<string, unknown>>(
@@ -180,8 +180,8 @@ afterAll(() => {
   window.cancelAnimationFrame = origCancelRAF;
   window.ResizeObserver = origResizeObserver;
 
-  // Bun shares one process; mockModule is permanent. Restore real modules for every specifier
-  // alias (see videoCanvasBunModuleRegistry.ts) so Linux CI and macOS behave the same.
+  // the previous runner shares one process; mockModule is permanent. Restore real modules for every specifier
+  // alias (see videoCanvasModuleMocks.ts) so Linux CI and macOS behave the same.
   // We use the variables captured in `beforeAll` BEFORE the mock was registered, so we don't
   // accidentally re-register the mock that `requireActual` would incorrectly return.
   mockModuleAllSpecifiers(VIRTUAL_VIDEO_MODULE_SPECIFIERS, () => realVirtualVideo);

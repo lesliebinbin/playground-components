@@ -2,7 +2,7 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HtxTextBox } from "../HtxTextBox.jsx";
 
-mockModule("@humansignal/icons", () => {
+mockModule(jest, "@humansignal/icons", () => {
   const React = require("react");
   return {
     IconPencil: () => React.createElement("span", { "data-testid": "icon-pencil" }),
@@ -11,7 +11,7 @@ mockModule("@humansignal/icons", () => {
   };
 });
 
-mockModule("@humansignal/ui", () => {
+mockModule(jest, "@humansignal/ui", () => {
   const React = require("react");
   return {
     Button: ({ children, onClick, "aria-label": ariaLabel, "data-testid": testId, ...props }) =>

@@ -16,7 +16,7 @@ const ModalContext = createContext<Modal | null>(null);
 
 function skipCssTransitionWait(): boolean {
   if (process.env.NODE_ENV === "test") return true;
-  // LSO bun unit CI sets NODE_ENV=development; bun --dom still uses jsdom, which never emits transitionend.
+  // LSO unit tests CI sets NODE_ENV=development; unit tests use jsdom, which never emits transitionend.
   return typeof navigator !== "undefined" && /jsdom/i.test(navigator.userAgent);
 }
 

@@ -4,7 +4,7 @@ import { IconInbox } from "@humansignal/icons";
 import { Button } from "../button/button";
 
 // Mock the styles since they're SCSS modules
-mockModule("./empty-state.module.css", () => ({
+mockModule(jest, "./empty-state.module.css", () => ({
   base: "base",
   // Size classes
   "size-large": "size-large",

@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, mock } from "bun:test";
 import { RangeInput } from "./Number";
 
 describe("RangeInput (FIT-2448)", () => {

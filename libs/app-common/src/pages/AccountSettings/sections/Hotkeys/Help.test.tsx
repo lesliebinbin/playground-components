@@ -1,4 +1,3 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 import { act, screen } from "@testing-library/react";
 import * as transitionUtils from "@humansignal/core/lib/utils/transition";
 import { effectiveHotkeys } from "../../hotkeys/effectiveHotkeys";
@@ -13,7 +12,7 @@ describe("Hotkey Help customization link", () => {
   let aroundTransitionSpy: ReturnType<typeof spyOn> | null = null;
 
   beforeEach(() => {
-    // CI runs bun unit with NODE_ENV=development, so Modal.hide() waits on
+    // CI runs unit tests with NODE_ENV=development, so Modal.hide() waits on
     // transitionend (never fired in jsdom) and leaves document Escape listeners.
     // Complete transitions synchronously so close() can unmount cleanly.
     aroundTransitionSpy = spyOn(transitionUtils, "aroundTransition").mockImplementation(

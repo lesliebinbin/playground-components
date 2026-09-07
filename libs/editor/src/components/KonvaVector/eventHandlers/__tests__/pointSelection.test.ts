@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import type { BezierPoint } from "../../types";
 import type { EventHandlerProps } from "../types";
 import { isActivePointEligibleForClosing, shouldClosePathOnPointClick } from "../pointSelection";

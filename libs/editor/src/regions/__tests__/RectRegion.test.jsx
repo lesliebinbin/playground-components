@@ -5,7 +5,7 @@
 import { getRoot, types } from "mobx-state-tree";
 
 const rectPropsRef = { current: null };
-mockModule("react-konva", () => {
+mockModule(jest, "react-konva", () => {
   const React = require("react");
   return {
     Rect: (props) => {
@@ -15,7 +15,7 @@ mockModule("react-konva", () => {
   };
 });
 
-mockModule("../../hooks/useRegionColor", () => ({
+mockModule(jest, "../../hooks/useRegionColor", () => ({
   useRegionStyles: mock(() => ({
     fillColor: "#ff8800",
     strokeColor: "#000",
@@ -23,23 +23,23 @@ mockModule("../../hooks/useRegionColor", () => ({
   })),
 }));
 
-mockModule("../../components/ImageView/ImageViewContext", () => ({
+mockModule(jest, "../../components/ImageView/ImageViewContext", () => ({
   ImageViewContext: require("react").createContext({ suggestion: null }),
 }));
 
-mockModule("../RegionWrapper", () => ({
+mockModule(jest, "../RegionWrapper", () => ({
   RegionWrapper: ({ children }) => require("react").createElement("div", { "data-testid": "region-wrapper" }, children),
 }));
 
-mockModule("../../components/ImageView/LabelOnRegion", () => ({
+mockModule(jest, "../../components/ImageView/LabelOnRegion", () => ({
   LabelOnRect: () => require("react").createElement("div", { "data-testid": "label-on-rect" }),
 }));
 
-mockModule("../../utils/image", () => ({
+mockModule(jest, "../../utils/image", () => ({
   createDragBoundFunc: mock(() => () => ({ x: 0, y: 0 })),
 }));
 
-mockModule("konva", () => {
+mockModule(jest, "konva", () => {
   return {
     Transform: mock().mockImplementation(function () {
       this.rotate = mock();
@@ -49,7 +49,7 @@ mockModule("konva", () => {
   };
 });
 
-mockModule("../../tags/object/Image", () => {
+mockModule(jest, "../../tags/object/Image", () => {
   const { types } = require("mobx-state-tree");
   return {
     ImageModel: types
@@ -97,7 +97,7 @@ mockModule("../../tags/object/Image", () => {
   };
 });
 import { act, render } from "@testing-library/react";
-import { importModulesWithBunReload } from "./moduleReload";
+import { importModulesForTest } from "./moduleReload";
 const ff = mockFF();
 let RectRegionModel;
 let HtxRectangle;
@@ -107,7 +107,7 @@ let TestRoot;
 let RootWithControl;
 
 const loadModels = async () => {
-  const [rectMod, imageMod, imageViewContextMod] = await importModulesWithBunReload([
+  const [rectMod, imageMod, imageViewContextMod] = await importModulesForTest([
     "../RectRegion",
     "../../tags/object/Image",
     "../../components/ImageView/ImageViewContext",

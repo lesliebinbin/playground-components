@@ -65,7 +65,7 @@ export interface InteractivePromptBox {
 
 // Exported separately from the gated `InteractivePromptMixin` alias below so
 // tests can instantiate the real mixin without relying on module-load flag
-// state (Bun's module cache isn't reliably bustable per-test).
+// state.
 export const InteractivePromptMixinImpl = types
   .model("InteractivePromptMixin", {})
   .volatile(() => ({

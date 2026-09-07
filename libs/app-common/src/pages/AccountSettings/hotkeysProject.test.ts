@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import { getProjectHotkeysSettingsPath, getProjectIdFromPathname } from "@humansignal/core/lib/utils/hotkeysProject";
 
 describe("hotkeysProject helpers", () => {

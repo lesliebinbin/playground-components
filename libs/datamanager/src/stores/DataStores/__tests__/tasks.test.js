@@ -1,18 +1,11 @@
 import { destroy, types } from "mobx-state-tree";
 
 // Mock the dependencies used in tasks module that might error out in test environment
-mockModule("../../../sdk/lsf-utils", () => ({
+mockModule(jest, "../../../sdk/lsf-utils", () => ({
   getAnnotationSnapshot: jest.fn((a) => a),
 }));
 
-mockModule("../Assignee", () => {
-  const { types } = require("mobx-state-tree");
-  return {
-    Assignee: types.model("Assignee", { id: types.identifierNumber }),
-  };
-});
-
-mockModule("../DynamicModel", () => {
+mockModule(jest, "../../DynamicModel", () => {
   const { types } = require("mobx-state-tree");
   return {
     DynamicModel: (name, _columns, attrs) => types.model(name, attrs),
@@ -20,7 +13,7 @@ mockModule("../DynamicModel", () => {
   };
 });
 
-mockModule("../types", () => {
+mockModule(jest, "../../types", () => {
   const { types } = require("mobx-state-tree");
   return {
     CustomJSON: types.frozen(),
@@ -28,7 +21,7 @@ mockModule("../types", () => {
 });
 
 // Avoid importing LSF utils/feature flags directly to prevent heavy dependencies
-mockModule("../../../utils/feature-flags", () => ({
+mockModule(jest, "../../../utils/feature-flags", () => ({
   FF_DEV_2536: "ff_dev_2536",
   FF_LOPS_E_3: "ff_lops_e_3",
   isFF: () => false,
@@ -40,8 +33,8 @@ beforeAll(() => {
   spyOn(coreFf, "isActive").mockReturnValue(false);
 });
 
-mockModule("../../mixins/DataStore", () => {
-  const { types } = require("mobx-state-tree");
+mockModule(jest, "../../../mixins/DataStore", () => {
+  const { types, getRoot } = require("mobx-state-tree");
   return {
     DataStoreItem: types.model("DataStoreItem", {
       id: types.maybeNull(types.union(types.number, types.string)),
@@ -55,6 +48,10 @@ mockModule("../../mixins/DataStore", () => {
           totalPredictions: types.optional(types.number, 0),
           similarityUpperLimit: types.optional(types.number, 0),
         })
+        .volatile(() => ({ selected: null }))
+        .views((self) => ({
+          get root() { return getRoot(self); },
+        }))
         .actions((self) => ({
           updateItem(id, item) {
             const index = self.list.findIndex((existing) => existing.id === id);
@@ -65,6 +62,7 @@ mockModule("../../mixins/DataStore", () => {
             self.list.push(item);
             return self.list[self.list.length - 1];
           },
+          setSelected(item) { self.selected = item; },
           setLoading(_id) {},
           finishLoading(_id) {},
         }));

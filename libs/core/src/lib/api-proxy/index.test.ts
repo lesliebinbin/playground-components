@@ -1,4 +1,3 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { APIProxy } from "./index";
 
 describe("APIProxy path-parameter URL encoding", () => {

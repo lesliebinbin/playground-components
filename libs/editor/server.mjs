@@ -7,11 +7,13 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { publicBasePath } from "../../tools/public-base-path.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(__dirname, "../../dist/libs/editor");
 const STATIC_ROOT = path.resolve(process.env.STATIC_ROOT || DEFAULT_ROOT);
 const PORT = Number(process.env.PORT) || 3000;
+const BASE_PATH = publicBasePath();
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -94,7 +96,14 @@ const server = createServer((req, res) => {
   }
 
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
-  const filePath = resolveFilePath(url.pathname);
+  if (BASE_PATH !== "/" && url.pathname === BASE_PATH.slice(0, -1)) {
+    res.writeHead(308, { Location: BASE_PATH + url.search });
+    res.end();
+    return;
+  }
+  const filePath = url.pathname.startsWith(BASE_PATH)
+    ? resolveFilePath(url.pathname.slice(BASE_PATH.length))
+    : null;
   if (!filePath) {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Not Found");
@@ -132,5 +141,5 @@ const server = createServer((req, res) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Serving ${STATIC_ROOT} at http://0.0.0.0:${PORT}`);
+  console.log(`Serving ${STATIC_ROOT} at http://0.0.0.0:${PORT}${BASE_PATH}`);
 });

@@ -34,7 +34,7 @@ describe("EmptyState Component", () => {
         {children}
       </div>
     ));
-    spyOn(uiModule, "IconExternal").mockImplementation(({ width, height }: any) => (
+    spyOn(iconsModule, "IconExternal").mockImplementation(({ width, height }: any) => (
       <span data-testid="icon-external" width={width} height={height} />
     ));
     spyOn(uiModule, "Tooltip").mockImplementation(({ children, title }: any) => (

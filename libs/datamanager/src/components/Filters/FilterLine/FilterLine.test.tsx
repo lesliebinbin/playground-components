@@ -1,7 +1,6 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { destroy, types, unprotect } from "mobx-state-tree";
-import { afterEach, describe, expect, it, mock } from "bun:test";
 import { observer } from "mobx-react";
 import { TabStore } from "../../../stores/Tabs/store";
 import { FilterLine, UnavailableFilterNotice, formatConjunctionLabel, isFilterEditingDisabled } from "./FilterLine";
@@ -307,6 +306,7 @@ describe("Dimension result filter cardinality (FIT-2241)", () => {
   let root: ReturnType<typeof RootStore.create> | null = null;
 
   afterEach(() => {
+    cleanup();
     if (root) destroy(root);
     root = null;
   });
@@ -329,6 +329,7 @@ describe("multiple child filter controls (FIT-2273)", () => {
   let root: ReturnType<typeof RootStore.create> | null = null;
 
   afterEach(() => {
+    cleanup();
     if (root) destroy(root);
     root = null;
   });
@@ -378,6 +379,7 @@ describe("review indicator child operators (FIT-2480)", () => {
   let root: ReturnType<typeof RootStore.create> | null = null;
 
   afterEach(() => {
+    cleanup();
     if (root) destroy(root);
     root = null;
   });
@@ -467,6 +469,7 @@ describe("locked filter value controls (FIT-2447)", () => {
   let root: ReturnType<typeof RootStore.create> | null = null;
 
   afterEach(() => {
+    cleanup();
     if (root) destroy(root);
     root = null;
   });
@@ -519,6 +522,7 @@ describe("Filters pane chrome UX (FIT-2448)", () => {
   let root: ReturnType<typeof RootStore.create> | null = null;
 
   afterEach(() => {
+    cleanup();
     if (root) destroy(root);
     root = null;
   });
@@ -586,6 +590,7 @@ describe("unavailable saved filters (FIT-2173)", () => {
   let root: ReturnType<typeof RootStore.create> | null = null;
 
   afterEach(() => {
+    cleanup();
     if (root) destroy(root);
     root = null;
   });
@@ -705,6 +710,7 @@ describe("filter column dropdown (FIT-2433)", () => {
   let root: ReturnType<typeof RootStore.create> | null = null;
 
   afterEach(() => {
+    cleanup();
     if (root) destroy(root);
     root = null;
   });

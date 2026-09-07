@@ -4,7 +4,7 @@
 import * as utilsModule from "../../Common/Utils";
 import { info } from "../../Common/Utils";
 import { WebAudioDecoder } from "../WebAudioDecoder";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 
 function createFakeAudioBuffer(
   overrides: { numberOfChannels?: number; sampleRate?: number; duration?: number; channelData?: Float32Array[] } = {},

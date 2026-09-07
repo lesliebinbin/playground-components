@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import { buildSearchVisiblePaths, parentJsonPath, areSearchVisiblePathsEqual } from "./virtualized-search-filter";
 
 describe("virtualized-search-filter", () => {

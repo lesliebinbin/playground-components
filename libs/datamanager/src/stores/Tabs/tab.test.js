@@ -1,4 +1,3 @@
-import { describe, it, expect, mock, afterEach } from "bun:test";
 import { destroy, types } from "mobx-state-tree";
 import { Tab } from "./tab";
 import { validateFilterSnapshot } from "./filter_snapshot_utils";
@@ -96,7 +95,7 @@ describe("validateFilterSnapshot", () => {
   });
 });
 
-// Unique counter to avoid MST identifier collisions across test runs in Bun's shared process
+// Unique counter to avoid MST identifier collisions across test runs in the previous runner's shared process
 let _tabIdCounter = 1000;
 
 describe("Tab virtual serialize (FIT-1835)", () => {

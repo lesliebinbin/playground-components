@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import { isEndpointVertexId, resolveVideoAppendOriginId } from "../utils";
 
 // Open polyline A -> B -> C -> D, connectivity expressed via prevPointId (the same

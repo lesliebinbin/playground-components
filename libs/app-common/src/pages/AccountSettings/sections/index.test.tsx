@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import { accountSettingsSections } from "./index";
 import type { AuthPermissions } from "@humansignal/core/providers/AuthProvider";
 import { ABILITY } from "@humansignal/core/providers/AuthProvider";

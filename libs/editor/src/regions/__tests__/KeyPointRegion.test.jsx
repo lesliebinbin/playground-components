@@ -7,7 +7,7 @@ import { applySnapshot, getSnapshot, getRoot, types } from "mobx-state-tree";
 // Avoid pulling in full Image tag (circular deps / heavy union) in unit tests.
 // AreaMixin makes region.parent === region.object (the image), so image must provide createSerializedResult,
 // internalToCanvasX/Y and canvasToInternalX/Y for region canvas getters and setPosition.
-mockModule("../../tags/object/Image", () => {
+mockModule(jest, "../../tags/object/Image", () => {
   const { types } = require("mobx-state-tree");
   return {
     ImageModel: types.model("ImageModel", { id: types.identifier }).actions((_self) => ({

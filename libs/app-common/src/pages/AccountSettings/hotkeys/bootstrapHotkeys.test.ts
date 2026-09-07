@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from "bun:test";
 import { effectiveHotkeys } from "./effectiveHotkeys";
 
 describe("bootstrapHotkeys side-effect module", () => {
@@ -20,8 +19,8 @@ describe("bootstrapHotkeys side-effect module", () => {
   it("bootstraps effectiveHotkeys when the module is evaluated", async () => {
     expect(window.APP_SETTINGS.lookupHotkey?.("annotation:annotation:submit")).toBeNull();
 
-    // Cache-bust so the side-effect body re-runs after resetForTests().
-    await import(`./bootstrapHotkeys?test=${Date.now()}`);
+    // Each Jest test file has its own module registry.
+    await import("./bootstrapHotkeys");
 
     expect(window.APP_SETTINGS.lookupHotkey?.("annotation:annotation:submit")).toEqual({
       key: "shift+enter",

@@ -5,8 +5,8 @@ import { types } from "mobx-state-tree";
 import { ImageEntityMixin } from "../ImageEntityMixin";
 import { imageCache } from "@humansignal/core";
 
-mockModule("@humansignal/core", () => {
-  const actual = requireActual("@humansignal/core");
+mockModule(jest, "@humansignal/core", () => {
+  const actual = jest.requireActual("@humansignal/core");
   return {
     ...actual,
     imageCache: {
@@ -22,7 +22,7 @@ mockModule("@humansignal/core", () => {
   };
 });
 
-mockModule("../../../../utils/FileLoader", () => {
+mockModule(jest, "../../../../utils/FileLoader", () => {
   return {
     FileLoader: mock().mockImplementation(() => ({
       download: mock(),

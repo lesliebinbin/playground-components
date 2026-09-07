@@ -14,8 +14,8 @@ describe("SettingsStore", () => {
       getItem: mock().mockReturnValue(null),
       setItem: mock(),
     };
-    getItemSpy = spyOn(window.localStorage, "getItem").mockImplementation((key) => localStorageMock.getItem(key));
-    setItemSpy = spyOn(window.localStorage, "setItem").mockImplementation((key, val) =>
+    getItemSpy = spyOn(Storage.prototype, "getItem").mockImplementation((key) => localStorageMock.getItem(key));
+    setItemSpy = spyOn(Storage.prototype, "setItem").mockImplementation((key, val) =>
       localStorageMock.setItem(key, val),
     );
   });

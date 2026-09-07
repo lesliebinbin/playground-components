@@ -9,7 +9,7 @@ type TransitionCallbacks = {
 };
 
 /**
- * Do not `mockModule` Dropdown — Bun keeps that replacement for the rest of the process,
+ * Do not `mockModule` Dropdown — the previous runner keeps that replacement for the rest of the process,
  * and it leaked into `dropdown.test.tsx` once `data-table.test.tsx` joined the suite.
  * Animate open/close synchronously; the spy is restored by preload `afterEach`.
  */

@@ -33,7 +33,7 @@ describe("TaxonomySelectionChip", () => {
   afterEach(() => {
     // Delete instead of restoring JSDOM's undefined — leaving undefined on
     // HTMLElement.prototype shadows Element.prototype.scrollIntoView and breaks
-    // later Select/cmdk tests in the shared Bun process.
+    // later Select/cmdk tests in the shared the previous runner process.
     delete (HTMLElement.prototype as any).scrollIntoView;
   });
 

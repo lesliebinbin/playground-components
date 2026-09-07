@@ -5,7 +5,7 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Audio } from "../view";
 import { FF_AUDIO_SPECTROGRAMS } from "../../../../utils/feature-flags";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 import * as timelineControlsModule from "../../../../components/Timeline/Controls";
 import * as uiModule from "@humansignal/ui";
 import * as useSpectrogramControlsModule from "../../../../lib/AudioUltra/hooks/useSpectrogramControls";
@@ -29,7 +29,7 @@ const HotkeyMock = Object.assign(
   },
 );
 
-mockModule("../../../../core/Hotkey", () => ({
+mockModule(jest, "../../../../core/Hotkey", () => ({
   Hotkey: HotkeyMock,
   default: { DEFAULT_SCOPE: HotkeyMock.DEFAULT_SCOPE, Hotkey: HotkeyMock },
 }));

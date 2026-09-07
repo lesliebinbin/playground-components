@@ -196,7 +196,7 @@ export const VirtualVideo = forwardRef<HTMLVideoElement, VirtualVideoProps>((pro
     attachEventListeners();
   });
 
-  // Create a video tag — useLayoutEffect so the canPlayType probe runs before paint; CI (Bun + RTL)
+  // Create a video tag — useLayoutEffect so the canPlayType probe runs before paint; CI (the previous runner + RTL)
   // was missing useEffect-driven updates within the default waitFor window.
   useLayoutEffect(() => {
     createVideoElement();

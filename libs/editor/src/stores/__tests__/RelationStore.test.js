@@ -20,7 +20,7 @@ const CONFIG_IMAGE_RECT_RELATIONS =
 
 const ensureRealResultModule = () => {
   const factory = () => {
-    const actual = requireActual("../../regions/Result");
+    const actual = jest.requireActual("../../regions/Result");
     return {
       __esModule: true,
       __skipMerge: true,
@@ -29,10 +29,9 @@ const ensureRealResultModule = () => {
     };
   };
 
-  mockModule("../../regions/Result", factory);
-  mockModule("../regions/Result", factory);
-  mockModule(RESULT_MODULE_ABS, factory);
-  mockModule(RESULT_MODULE_URL, factory);
+  mockModule(jest, "../../regions/Result", factory);
+  mockModule(jest, RESULT_MODULE_ABS, factory);
+  mockModule(jest, RESULT_MODULE_URL, factory);
 };
 
 function createStoreWithTwoRectRegionsAndRelations() {
@@ -107,8 +106,7 @@ describe("RelationStore", () => {
   let setItemSpy;
 
   beforeEach(() => {
-    resetAllMocks();
-    resetModules();
+    clearAllMocks();
     ensureRealResultModule();
     require("../../tags/visual/View");
     require("../../tags/object/Image/Image.js");
@@ -127,8 +125,8 @@ describe("RelationStore", () => {
     }
 
     const storage = {};
-    getItemSpy = spyOn(window.localStorage, "getItem").mockImplementation((k) => storage[k] ?? null);
-    setItemSpy = spyOn(window.localStorage, "setItem").mockImplementation((k, v) => {
+    getItemSpy = spyOn(Storage.prototype, "getItem").mockImplementation((k) => storage[k] ?? null);
+    setItemSpy = spyOn(Storage.prototype, "setItem").mockImplementation((k, v) => {
       storage[k] = v;
     });
   });
@@ -369,8 +367,7 @@ describe("Relation (model)", () => {
   let setItemSpy;
 
   beforeEach(() => {
-    resetAllMocks();
-    resetModules();
+    clearAllMocks();
     ensureRealResultModule();
     require("../../tags/visual/View");
     require("../../tags/object/Image/Image.js");
@@ -389,8 +386,8 @@ describe("Relation (model)", () => {
     }
 
     const storage = {};
-    getItemSpy = spyOn(window.localStorage, "getItem").mockImplementation((k) => storage[k] ?? null);
-    setItemSpy = spyOn(window.localStorage, "setItem").mockImplementation((k, v) => {
+    getItemSpy = spyOn(Storage.prototype, "getItem").mockImplementation((k) => storage[k] ?? null);
+    setItemSpy = spyOn(Storage.prototype, "setItem").mockImplementation((k, v) => {
       storage[k] = v;
     });
   });

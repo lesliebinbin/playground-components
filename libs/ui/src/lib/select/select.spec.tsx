@@ -12,7 +12,7 @@ global.ResizeObserver = class ResizeObserver {
 Element.prototype.scrollIntoView = mock();
 
 // Mock the styles
-mockModule("./select.module.css", () => ({
+mockModule(jest, "./select.module.css", () => ({
   selectTrigger: "selectTrigger",
   isInline: "isInline",
   isOpen: "isOpen",
@@ -31,7 +31,7 @@ mockModule("./select.module.css", () => ({
 
 // Mock react-window and react-window-infinite-loader to capture props
 const mockVariableSizeList = mock();
-mockModule("react-window", () => ({
+mockModule(jest, "react-window", () => ({
   VariableSizeList: (props: any) => {
     mockVariableSizeList(props);
     // Render the items directly for testing
@@ -51,7 +51,7 @@ mockModule("react-window", () => ({
   },
 }));
 
-mockModule("react-window-infinite-loader", () => ({
+mockModule(jest, "react-window-infinite-loader", () => ({
   __esModule: true,
   default: ({ children, ...props }: any) => {
     return children({

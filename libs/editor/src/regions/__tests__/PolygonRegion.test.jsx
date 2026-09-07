@@ -3,9 +3,9 @@
  * View coverage is largely from Cypress; these tests cover model logic.
  */
 import { types } from "mobx-state-tree";
-import { importModulesWithBunReload } from "./moduleReload";
+import { importModulesForTest } from "./moduleReload";
 
-mockModule("../../tags/object/Image", () => {
+mockModule(jest, "../../tags/object/Image", () => {
   const { types } = require("mobx-state-tree");
   return {
     ImageModel: types
@@ -45,7 +45,7 @@ let removeHoverAnchor;
 let TestRoot;
 
 const loadModels = async () => {
-  const [polygonMod, imageMod] = await importModulesWithBunReload(["../PolygonRegion", "../../tags/object/Image"]);
+  const [polygonMod, imageMod] = await importModulesForTest(["../PolygonRegion", "../../tags/object/Image"]);
   const ImageModel = imageMod.ImageModel;
 
   PolygonRegionModel = polygonMod.PolygonRegionModel;

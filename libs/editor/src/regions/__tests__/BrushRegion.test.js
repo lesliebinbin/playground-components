@@ -11,7 +11,7 @@ import { isStateTreeNode, types } from "mobx-state-tree";
 const ff = mockFF();
 
 let mockBrushImageRef = null;
-mockModule("../../utils/canvas", () => ({
+mockModule(jest, "../../utils/canvas", () => ({
   Region2RLE: mock(),
   RLE2Region: mock(() => ({ onload: null, src: "" })),
   maskDataURL2Image: mock(() => {
@@ -20,7 +20,7 @@ mockModule("../../utils/canvas", () => ({
   }),
 }));
 
-mockModule("../../components/InteractiveOverlays/Geometry", () => ({
+mockModule(jest, "../../components/InteractiveOverlays/Geometry", () => ({
   Geometry: {
     getImageDataBBox: mock(() => ({ x: 0, y: 0, width: 50, height: 50 })),
   },
@@ -41,7 +41,7 @@ const mockCtx = {
   clearRect: mock(),
   canvas: { width: 100, height: 100 },
 };
-mockModule("react-konva", () => {
+mockModule(jest, "react-konva", () => {
   const React = require("react");
   return {
     Layer: React.forwardRef(({ children, ...p }, ref) => {
@@ -82,7 +82,7 @@ mockModule("react-konva", () => {
   };
 });
 
-mockModule("../../components/ImageView/ImageViewContext", () => ({
+mockModule(jest, "../../components/ImageView/ImageViewContext", () => ({
   ImageViewContext: require("react").createContext({ suggestion: null }),
 }));
 
@@ -227,7 +227,7 @@ const MockImageModel = types
     },
   }));
 
-mockModule("../../tags/object/Image", () => ({
+mockModule(jest, "../../tags/object/Image", () => ({
   ImageModel: MockImageModel,
 }));
 

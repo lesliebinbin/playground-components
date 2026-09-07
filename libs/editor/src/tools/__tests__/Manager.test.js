@@ -14,8 +14,8 @@ beforeEach(() => {
 });
 
 const mockFfActive = mock(() => false);
-mockModule("@humansignal/core", () => {
-  const actual = requireActual("@humansignal/core");
+mockModule(jest, "@humansignal/core", () => {
+  const actual = jest.requireActual("@humansignal/core");
   return {
     ...actual,
     ff: { ...actual.ff, isActive: (flag) => mockFfActive(flag) },
@@ -39,18 +39,18 @@ let originalWindow;
 
 let ToolsManager;
 const loadToolsManager = async () => {
-  const actual = requireActual("../Manager");
+  const actual = jest.requireActual("../Manager");
   if (actual?.default) return actual.default;
-  const mod = await import(`../Manager?bun_actual=${Date.now()}`);
+  const mod = await import(`../Manager`);
   return mod.default ?? mod;
 };
 
 beforeEach(async () => {
   clearAllMocks();
   mockFfActive.mockReturnValue(false);
-  originalWindow = global.window;
-  Object.defineProperty(global, "window", {
-    value: { ...(originalWindow ?? {}), localStorage: localStorageMock },
+  originalWindow = window.localStorage;
+  Object.defineProperty(window, "localStorage", {
+    value: localStorageMock,
     writable: true,
     configurable: true,
   });
@@ -75,7 +75,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
-  Object.defineProperty(global, "window", {
+  Object.defineProperty(window, "localStorage", {
     value: originalWindow,
     writable: true,
     configurable: true,

@@ -5,7 +5,7 @@
  */
 import { types } from "mobx-state-tree";
 
-mockModule("../../core/Hotkey", () => {
+mockModule(jest, "../../core/Hotkey", () => {
   const hotkeyApi = {
     keymap: {},
   };

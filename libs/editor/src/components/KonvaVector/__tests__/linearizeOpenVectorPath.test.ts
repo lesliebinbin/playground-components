@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import { linearizeOpenVectorPath } from "../utils";
 
 type V = { id: string; x: number; y: number; prevPointId?: string | null };

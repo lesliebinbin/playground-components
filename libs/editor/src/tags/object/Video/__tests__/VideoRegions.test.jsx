@@ -7,7 +7,7 @@ import ToolsManager from "../../../../tools/Manager";
 let VideoRegions;
 let MIN_SIZE;
 
-mockModule("chroma-js", () => ({
+mockModule(jest, "chroma-js", () => ({
   __esModule: true,
   default: () => ({
     alpha: () => ({
@@ -19,12 +19,12 @@ mockModule("chroma-js", () => ({
 const mockCreateBoundingBoxGetter = mock(() => () => (_oldBox, newBox) => newBox);
 const mockCreateOnDragMoveHandler = mock(() => () => {});
 
-mockModule("../TransformTools", () => ({
+mockModule(jest, "../TransformTools", () => ({
   createBoundingBoxGetter: (...args) => mockCreateBoundingBoxGetter(...args),
   createOnDragMoveHandler: (...args) => mockCreateOnDragMoveHandler(...args),
 }));
 
-mockModule("../Rectangle", () => {
+mockModule(jest, "../Rectangle", () => {
   const _React = require("react");
   return {
     Rectangle: ({ id, reg, onClick, ...rest }) => (
@@ -33,7 +33,7 @@ mockModule("../Rectangle", () => {
   };
 });
 
-mockModule("react-konva", () => {
+mockModule(jest, "react-konva", () => {
   const React = require("react");
   function withKonvaEvt(handler) {
     if (!handler) return undefined;
@@ -141,7 +141,7 @@ const defaultProps = {
 beforeAll(async () => {
   const videoRegionsAbs = require.resolve("../VideoRegions");
   const videoRegionsUrl = require("node:url").pathToFileURL(videoRegionsAbs).href;
-  const videoRegionsModule = await import(`${videoRegionsUrl}?bun_reload=${Date.now()}`);
+  const videoRegionsModule = await import(`${videoRegionsUrl}`);
   VideoRegions = videoRegionsModule.VideoRegions;
   MIN_SIZE = videoRegionsModule.MIN_SIZE;
 });

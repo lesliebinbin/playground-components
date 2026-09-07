@@ -279,7 +279,7 @@ describe("DM Form.Builder — visible_when conditional visibility", () => {
             fields: [{ ...selectionModeField, trigger_form_update: true }, usersMultiselect],
           },
         ]}
-        triggerAction={triggerAction}
+        triggerAction={(field) => triggerAction(field)}
       />,
     );
 

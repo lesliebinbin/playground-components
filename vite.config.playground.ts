@@ -12,6 +12,7 @@ import tailwindConfig from "./tailwind.config.js";
 import { CSS_PREFIX, cssModulesGenerateScopedName } from "./vite-prefix-css-module";
 import postcssImport from "postcss-import";
 import { jsxJsPlugin, optimizeDepsAutomaticJsxPlugin } from "./vite-lib-jsx-plugins";
+import { publicBasePath } from "./tools/public-base-path.mjs";
 
 const require = createRequire(import.meta.url);
 loadEnv("", __dirname, "");
@@ -28,7 +29,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     root: path.resolve(__dirname, "apps/playground/src"),
-    base: isPlaygroundProd || mode === "production" ? "/playground-assets/" : "/",
+    base: isPlaygroundProd || mode === "production" ? `${publicBasePath()}playground-assets/` : publicBasePath(),
     publicDir: false,
     envDir: __dirname,
     define: {
@@ -86,6 +87,13 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 2000,
     },
     plugins: [
+      {
+        name: "playground-document-base",
+        transformIndexHtml: {
+          order: "post",
+          handler: (html) => html.replace("__PUBLIC_BASE_PATH__", publicBasePath()),
+        },
+      },
       jsxJsPlugin(),
       react(),
       svgr({

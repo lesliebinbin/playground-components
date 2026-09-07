@@ -8,11 +8,11 @@ const mockToastShow = mock();
 const mockToast = { show: mockToastShow };
 const mockUseAccountSettingsExtension = mock(() => ({ requiredProfileFields: [] as string[] }));
 
-mockModule("@humansignal/core/providers/AuthProvider", () => ({
+mockModule(jest, "@humansignal/core/providers/AuthProvider", () => ({
   useAuth: () => mockUseAuth(),
 }));
 
-mockModule("../extensions", () => ({
+mockModule(jest, "../extensions", () => ({
   useAccountSettingsExtension: () => mockUseAccountSettingsExtension(),
 }));
 
@@ -21,16 +21,16 @@ const setupRequiredFields = (requiredProfileFields: string[]) =>
 
 // Mock only the mutation-atom factory, returning a real jotai atom that holds
 // the mock. This keeps the real `jotai` module (and `useAtomValue`) intact.
-// Globally mocking `jotai` leaks across files under Bun (module mocks are not
+// Globally mocking `jotai` leaks across files under the previous runner (module mocks are not
 // restored between files) and breaks unrelated tests, e.g. playground's
 // PlaygroundApp.test.tsx where `useAtomValue(displayModeAtom)` then returns a
 // non-string and `displayMode.startsWith` throws.
-mockModule("jotai-tanstack-query", () => ({
-  atomWithMutation: () => requireActual("jotai").atom({ mutateAsync: mockAvatarMutation }),
+mockModule(jest, "jotai-tanstack-query", () => ({
+  atomWithMutation: () => jest.requireActual("jotai").atom({ mutateAsync: mockAvatarMutation }),
 }));
 
-mockModule("@humansignal/ui", () => ({
-  ...requireActual("@humansignal/ui"),
+mockModule(jest, "@humansignal/ui", () => ({
+  ...jest.requireActual("@humansignal/ui"),
   useToast: () => mockToast,
 }));
 

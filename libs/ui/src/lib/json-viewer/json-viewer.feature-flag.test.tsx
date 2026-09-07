@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ff } from "@humansignal/core";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 import { JsonViewer } from "./json-viewer";
 import * as jsonEditReactModule from "json-edit-react";
 import * as virtualizedInnerModule from "./virtualized-json-viewer-inner";

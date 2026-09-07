@@ -10,7 +10,7 @@ import { Modal } from "./ModalPopup";
  * so the opener's click-outside handler saw the child's backdrop click as "a click outside my content"
  * and closed too — dismissing a nested dialog took the whole report with it.
  *
- * These tests must pass with NODE_ENV=development too: LSO bun unit CI sets that, and jsdom never
+ * These tests must pass with NODE_ENV=development too: LSO unit tests CI sets that, and jsdom never
  * emits CSS transitionend, so hide() used to hang and onHide never fired.
  */
 describe("Modal click-outside with a nested modal", () => {

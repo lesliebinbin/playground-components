@@ -1,176 +1,50 @@
-import { createRequire } from "node:module";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
 import React from "react";
-import * as matchers from "@testing-library/jest-dom/matchers";
-import { afterEach, expect, mock, spyOn } from "bun:test";
+import { jest, afterEach, expect } from "@jest/globals";
+import "@testing-library/jest-dom";
 import { JSDOM } from "jsdom";
 import fetchMock from "../../libs/editor/__mocks__/jest-fetch-mock.js";
-
-// ---------------------------------------------------------------------------
-// Module mock helper — merges factory output with real module exports so that
-// unmocked exports remain available (unlike Bun's native mock.module which
-// fully replaces). Set `__skipMerge: true` in the factory return to opt out.
-// ---------------------------------------------------------------------------
-type ModuleFactory = () => unknown;
-
-const _moduleMocks = new Map<string, unknown>();
-const _moduleActuals = new Map<string, unknown>();
-const _requireModule = createRequire(import.meta.url);
-
-function _loadActualModule(specifier: string): unknown {
-  if (_moduleActuals.has(specifier)) return _moduleActuals.get(specifier);
-  try {
-    const loaded = _requireModule(specifier);
-    _moduleActuals.set(specifier, loaded);
-    return loaded;
-  } catch {
-    return undefined;
-  }
-}
-
-function _getCallerFile(): string | null {
-  const stack = new Error().stack ?? "";
-  const lines = stack.split("\n");
-  for (const line of lines) {
-    if (line.includes("preload.ts") || line.includes("preload.js")) continue;
-    const match = line.match(/(?:file:\/\/)?(\/[^)\s:]+(?:\.[cm]?[jt]sx?))(?::\d+:\d+)?/);
-    if (match?.[1]) {
-      try {
-        return decodeURIComponent(match[1]);
-      } catch {
-        return match[1];
-      }
-    }
-  }
-  return null;
-}
-
-function _resolveModuleIds(specifier: string): string[] {
-  const ids = new Set<string>();
-  ids.add(specifier);
-
-  const callerFile = _getCallerFile();
-  if (callerFile) {
-    try {
-      const callerRequire = createRequire(callerFile);
-      const resolved = callerRequire.resolve(specifier);
-      ids.add(resolved);
-      ids.add(pathToFileURL(resolved).href);
-    } catch {
-      // Fallback: compute absolute path manually for relative specifiers
-      if (specifier.startsWith(".") || specifier.startsWith("/")) {
-        const abs = path.resolve(path.dirname(callerFile), specifier);
-        ids.add(abs);
-        ids.add(pathToFileURL(abs).href);
-      }
-    }
-  }
-
-  return [...ids];
-}
-
-function registerMock(specifier: string, factory?: ModuleFactory) {
-  if (!factory) return;
-  const ids = _resolveModuleIds(specifier);
-  const produced = factory();
-  let value = produced;
-
-  if (
-    produced &&
-    typeof produced === "object" &&
-    !Array.isArray(produced) &&
-    !(produced as Record<string, unknown>).__skipMerge
-  ) {
-    // Try the resolved path first (most likely to succeed), then fall back
-    let actual: unknown;
-    for (const id of ids) {
-      actual = _loadActualModule(id);
-      if (actual && typeof actual === "object") break;
-    }
-    if (actual && typeof actual === "object") {
-      const actualObj = actual as Record<string, unknown>;
-      const producedObj = produced as Record<string, unknown>;
-      try {
-        // Spreading `actual` can throw ReferenceError (e.g. `default` in TDZ) during circular imports.
-        const merged: Record<string, unknown> = { ...actualObj, ...producedObj };
-        if (producedObj.default && typeof producedObj.default === "object") {
-          const actualDefaultCandidate =
-            actualObj.default && typeof actualObj.default === "object" ? actualObj.default : actualObj;
-          const actualDefault = actualDefaultCandidate as object;
-          const producedDefault = producedObj.default as object;
-          const mergedDefault = Object.assign(
-            Object.create(Object.getPrototypeOf(actualDefault)),
-            actualDefault as Record<string, unknown>,
-          );
-          for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(producedDefault))) {
-            try {
-              Object.defineProperty(mergedDefault, key, descriptor);
-            } catch {
-              if ("value" in descriptor) {
-                (mergedDefault as Record<string, unknown>)[key] = descriptor.value;
-              }
-            }
-          }
-          merged.default = mergedDefault;
-        }
-        value = merged;
-      } catch {
-        // Spread/merge can throw (e.g. TDZ on `default` during circular ESM load); use mock only.
-        value = produced;
-      }
-    }
-  }
-
-  for (const id of ids) {
-    _moduleMocks.set(id, value);
-    mock.module(id, () => value as any);
-  }
-}
-
-function resetMockState() {
-  _moduleMocks.clear();
-  _moduleActuals.clear();
-}
-
-expect.extend(matchers);
-
-(globalThis as any).mock = mock;
-(globalThis as any).spyOn = spyOn;
-
-// Expose mockFF globally so test files don't need deep relative __mocks__ imports
 import { mockFF } from "../../libs/editor/__mocks__/global";
-(globalThis as any).mockFF = mockFF;
 
-const bunTestModule = await import("bun:test");
-const bunJest = (bunTestModule as any).jest;
-if (bunJest) {
-  bunJest.mock = registerMock;
-  bunJest.doMock = registerMock;
-  bunJest.requireActual = (specifier: string) => {
-    if (specifier.startsWith(".") || specifier.startsWith("/")) {
-      const caller = _getCallerFile();
-      if (caller) return createRequire(caller)(specifier);
+const mock = Object.assign(jest.fn, {
+  clearAllMocks: jest.clearAllMocks,
+  restoreAllMocks: jest.restoreAllMocks,
+  restore: jest.restoreAllMocks,
+});
+Object.assign(globalThis, {
+  mock,
+  mockFF,
+  spyOn(object, key, accessType) {
+    if (!accessType && object[key]?.$$typeof && typeof object[key] !== "function") {
+      const component = object[key];
+      const replacement = jest.fn((props) => React.createElement(component, props));
+      jest.replaceProperty(object, key, replacement);
+      return replacement;
     }
-    return _requireModule(specifier);
-  };
-  bunJest.resetModules = () => {};
-}
-(globalThis as any).useFakeTimers = (opts?: { now?: number | Date }) => bunJest.useFakeTimers(opts);
-(globalThis as any).useRealTimers = () => bunJest.useRealTimers();
-(globalThis as any).advanceTimersByTime = (ms: number) => bunJest.advanceTimersByTime(ms);
-(globalThis as any).runAllTimers = () => bunJest.runAllTimers();
-(globalThis as any).setSystemTime = (now?: number | Date) => bunJest.setSystemTime(now);
-(globalThis as any).mockModule = registerMock;
-(globalThis as any).requireActual = bunJest.requireActual;
-(globalThis as any).clearAllMocks = () => bunJest.clearAllMocks();
-(globalThis as any).resetAllMocks = () => bunJest.resetAllMocks();
-(globalThis as any).restoreAllMocks = () => bunJest.restoreAllMocks();
-(globalThis as any).resetModules = () => {};
-
-// Do not eagerly import VirtualVideo here: it pulls Infomodal (and antd/ff graph) during preload and
-// can hit TDZ / ordering issues with Bun's test runner. VirtualVideo.test.tsx loads the module via
-// dynamic import when needed.
+    return accessType ? jest.spyOn(object, key, accessType) : jest.spyOn(object, key);
+  },
+  useFakeTimers: jest.useFakeTimers,
+  useRealTimers: jest.useRealTimers,
+  advanceTimersByTime: jest.advanceTimersByTime,
+  runAllTimers: jest.runAllTimers,
+  setSystemTime: jest.setSystemTime,
+  clearAllMocks: jest.clearAllMocks,
+  resetAllMocks: jest.resetAllMocks,
+  restoreAllMocks: jest.restoreAllMocks,
+  resetModules: jest.resetModules,
+  // Pass the test module's Jest object so relative paths resolve from that file.
+  mockModule(runtime, id, factory) {
+    if (!factory) return runtime.doMock(id);
+    runtime.doMock(id, () => {
+      const produced = factory();
+      if (!produced || typeof produced !== "object" || Array.isArray(produced)) return produced;
+      if (produced.__skipMerge) return produced;
+      const actual = runtime.requireActual(id);
+      const merged = { ...actual, ...produced };
+      if ("default" in produced || actual?.__esModule) merged.__esModule = true;
+      return merged;
+    });
+  },
+});
 
 const reactNoisePatterns = [
   /^You are using a whole package of antd/,
@@ -368,54 +242,11 @@ Object.defineProperty = function (target: object, property: PropertyKey, descrip
 // Import RTL's /pure build (no auto-cleanup afterEach) and expose it as the
 // main "@testing-library/react" module.  We handle cleanup ourselves in our
 // afterEach with a try-catch so it can never hang the runner.
-const _rtlPure = await import("@testing-library/react/pure");
-mock.module("@testing-library/react", () => _rtlPure);
+const _rtlPure = require("@testing-library/react/pure");
+jest.doMock("@testing-library/react", () => _rtlPure);
 const _rtlCleanup = _rtlPure.cleanup;
-
-// Lightweight plugin mocks for style/static imports.
-if (typeof Bun !== "undefined" && typeof Bun.plugin === "function") {
-  Bun.plugin({
-    name: "bun-test-style-and-asset-mocks",
-    setup(build) {
-      build.onLoad({ filter: /\.(css|scss|sass|less)$/ }, () => ({
-        loader: "js",
-        contents: "export default new Proxy({}, { get: (_, key) => key });",
-      }));
-      build.onLoad({ filter: /\.(svg|png|jpg|jpeg|gif|webp)$/ }, () => ({
-        loader: "js",
-        contents:
-          "import React from 'react'; export const ReactComponent = React.forwardRef((props, ref) => React.createElement('svg', { ...props, ref })); export default '';",
-      }));
-    },
-  });
-}
-
-const ensureHotkeyKeymapGuard = async () => {
-  try {
-    const hotkeyModule: any = await import("../../libs/editor/src/core/Hotkey");
-    const Hotkey = hotkeyModule?.Hotkey ?? hotkeyModule?.default?.Hotkey;
-    if (!Hotkey || typeof Hotkey !== "function") return;
-
-    const baseKeymap = Hotkey.keymap && typeof Hotkey.keymap === "object" ? Hotkey.keymap : {};
-    const alreadyGuarded = (baseKeymap as any).__bunHotkeyGuard === true;
-
-    if (!alreadyGuarded) {
-      const guarded = new Proxy(baseKeymap, {
-        get(target, prop, receiver) {
-          if (prop === "__bunHotkeyGuard") return true;
-          if (Reflect.has(target, prop)) return Reflect.get(target, prop, receiver);
-          // Unknown named hotkeys should be harmless no-ops in tests.
-          return { key: undefined, description: "" };
-        },
-      });
-      Hotkey.keymap = guarded;
-    }
-  } catch {
-    // optional shim; ignore if module isn't available yet
-  }
-};
-
-await ensureHotkeyKeymapGuard();
+// user-event registers lifecycle hooks; load it before any test executes.
+require("@testing-library/user-event");
 
 const createDefaultFetchMock = () => mock(async () => new Response("{}", { status: 200 })) as any;
 globalThis.fetch = createDefaultFetchMock();
@@ -428,11 +259,11 @@ if (!(globalThis as any).customElements) {
 }
 // ---------------------------------------------------------------------------
 // Centralized MST mock: safe try-catch wrappers prevent per-file
-// mock.module("mobx-state-tree") from polluting the global module cache.
+// jest.doMock("mobx-state-tree") from polluting the global module cache.
 // Test files that need specific behavior override via .mockImplementation()
 // in beforeEach; preload's afterEach resets everything to the safe default.
 // ---------------------------------------------------------------------------
-const _mst: any = await import("mobx-state-tree");
+const _mst: any = require("mobx-state-tree");
 const _mstExports: Record<string, any> = { ..._mst };
 const _origGetRoot = _mst.getRoot;
 const _origGetEnv = _mst.getEnv;
@@ -493,7 +324,7 @@ const _safeGetType = mock((...args: any[]) => {
   getType: _origGetType,
 };
 
-mock.module("mobx-state-tree", () => ({
+jest.doMock("mobx-state-tree", () => ({
   ..._mstExports,
   __esModule: true,
   getRoot: _safeGetRoot,
@@ -509,8 +340,7 @@ function _resetMstMock(fn: any, impl: Function) {
   if (typeof fn?.mockImplementation === "function") fn.mockImplementation(impl);
 }
 
-mock.module("jest-fetch-mock", () => ({ default: fetchMock, ...fetchMock }));
-mock.module("react-konva-utils", () => {
+jest.doMock("react-konva-utils", () => {
   const React = require("react");
   const Portal = (props: { children?: React.ReactNode }) => React.createElement(React.Fragment, null, props?.children);
   return {
@@ -519,90 +349,17 @@ mock.module("react-konva-utils", () => {
     default: { Portal },
   };
 });
-mock.module("@adobe/css-tools", () => ({}));
-mock.module("react-markdown", () => ({
+
+jest.doMock("react-markdown", () => ({
   __esModule: true,
   default: ({ children }: { children?: unknown }) => children ?? null,
 }));
-mock.module("rehype-raw", () => ({
+jest.doMock("rehype-raw", () => ({
   __esModule: true,
   default: () => undefined,
 }));
 
 // Konva requires native canvas in node-mode; keep existing test behavior by stubbing.
-mock.module("konva", () => {
-  const noop = () => {};
-  class KonvaNode {
-    on = noop;
-    off = noop;
-    destroy = noop;
-    remove = noop;
-    getLayer() {
-      return null;
-    }
-    getStage() {
-      return null;
-    }
-    getParent() {
-      return null;
-    }
-  }
-  class Transformer extends KonvaNode {
-    nodes() {
-      return [];
-    }
-    forceUpdate = noop;
-  }
-  class Transform {
-    m = [1, 0, 0, 1, 0, 0];
-    copy() {
-      return new Transform();
-    }
-    point(p: any) {
-      return p;
-    }
-    translate() {
-      return this;
-    }
-    scale() {
-      return this;
-    }
-    rotate() {
-      return this;
-    }
-    invert() {
-      return this;
-    }
-    getMatrix() {
-      return this.m;
-    }
-    multiply() {
-      return this;
-    }
-  }
-  const konva = {
-    Transformer,
-    Transform,
-    Node: KonvaNode,
-    Group: class extends KonvaNode {},
-    Layer: class extends KonvaNode {},
-    Stage: class extends KonvaNode {},
-    Rect: class extends KonvaNode {},
-    Circle: class extends KonvaNode {},
-    Line: class extends KonvaNode {},
-    Image: class extends KonvaNode {},
-    Text: class extends KonvaNode {},
-    Shape: class extends KonvaNode {},
-    Arrow: class extends KonvaNode {},
-    Path: class extends KonvaNode {},
-    Label: class extends KonvaNode {},
-    Tag: class extends KonvaNode {},
-    Ring: class extends KonvaNode {},
-    getAngle: (a: number) => a,
-    showWarnings: false,
-  };
-  return { default: konva, ...konva };
-});
 
 globalThis.ResizeObserver = class ResizeObserver {
   observe() {}
@@ -750,20 +507,12 @@ const _origDocQuerySelector = document.querySelector.bind(document);
 const _origDocQSAll = document.querySelectorAll.bind(document);
 const _origGetComputedStyle = window.getComputedStyle;
 
-let destroySharedStores: (() => void) | null = null;
-try {
-  const sharedStoreModule = await import("../../libs/editor/src/mixins/SharedChoiceStore/mixin");
-  destroySharedStores = (sharedStoreModule as any).destroy ?? null;
-} catch {
-  // editor module may not be available in all test suites
-}
-
 afterEach(() => {
   // Restore real timers first — prevents fake timer leaks between files from
   // poisoning subsequent tests (e.g. lodash-replacements, throttle tests).
   // Must happen before RAF cleanup since clearTimeout needs real timers.
   try {
-    bunJest.useRealTimers();
+    jest.useRealTimers();
   } catch {
     /* ignore if already using real timers */
   }
@@ -776,21 +525,19 @@ afterEach(() => {
   }
   // Scrub leftover DOM nodes — RTL cleanup only removes its own containers;
   // direct DOM manipulations (appendChild, innerHTML, etc.) from earlier tests
-  // accumulate in Bun's shared process, bloating document.body over time.
+  // accumulate in the test environment, bloating document.body over time.
   document.body.innerHTML = "";
-  document.head.querySelectorAll("style:not([data-bun-preload])").forEach((el) => el.remove());
+  document.head.querySelectorAll("style:not([data-test-preload])").forEach((el) => el.remove());
   ensureSelectionApis();
   document.querySelector = _origDocQuerySelector;
   document.querySelectorAll = _origDocQSAll;
   window.getComputedStyle = _origGetComputedStyle;
-  void ensureHotkeyKeymapGuard();
   if (typeof (mock as any).restore === "function") {
     (mock as any).restore();
   }
   globalThis.fetch = createDefaultFetchMock();
-  resetMockState();
+
   if (typeof fetchMock.resetMocks === "function") fetchMock.resetMocks();
-  if (destroySharedStores) destroySharedStores();
 
   _resetMstMock(_safeGetRoot, (node: any) => {
     try {

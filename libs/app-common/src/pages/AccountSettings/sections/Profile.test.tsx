@@ -5,7 +5,7 @@ import { useReportProfileDirty } from "../ProfileDirtyContext";
 
 const mockGetProfileExtras = mock(() => [] as React.FC[]);
 
-mockModule("../extensions", () => ({
+mockModule(jest, "../extensions", () => ({
   getAccountSettingsProfileExtras: () => mockGetProfileExtras(),
 }));
 
@@ -22,12 +22,12 @@ describe("Profile", () => {
     mockGetProfileExtras.mockReturnValue([]);
     // Stub PersonalInfo via spyOn (auto-restored by the test preload's
     // afterEach) instead of mock.module, which would otherwise leak the stub
-    // into PersonalInfo.test.tsx and other files sharing the Bun worker.
+    // into PersonalInfo.test.tsx and other files sharing the the previous runner worker.
     spyOn(PersonalInfoModule, "PersonalInfo").mockImplementation(() => <div>Personal Info Form</div>);
     // The real UnsavedChanges pulls in LeaveBlocker (react-router `history.block`) and the modal stack,
     // which need a Router host and `getUserConfirmation` wiring. Spy on it with a probe that surfaces the
     // `hasChanges` prop so we can assert the page-level guard reflects aggregate dirty state. spyOn is
-    // auto-restored per test, so it won't leak into other files sharing the Bun worker like mock.module would.
+    // auto-restored per test, so it won't leak into other files sharing the the previous runner worker like mock.module would.
     spyOn(UnsavedChangesModule, "UnsavedChanges").mockImplementation((props) => (
       <div data-testid="unsaved-guard" data-has-changes={String(props.hasChanges)} />
     ));

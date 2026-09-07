@@ -16,7 +16,7 @@ const mockAnnotationStore = {
   selectedHistory: mockAnnotation,
 };
 
-mockModule("../../../components/Infomodal/Infomodal", () => ({
+mockModule(jest, "../../../components/Infomodal/Infomodal", () => ({
   __esModule: true,
   __skipMerge: true,
   default: { error: mock(), warning: mock(), success: mock(), info: mock() },

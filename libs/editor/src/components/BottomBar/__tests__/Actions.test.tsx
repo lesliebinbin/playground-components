@@ -4,11 +4,11 @@ import { Actions } from "../Actions";
 import * as uiModule from "@humansignal/ui";
 import * as iconsModule from "@humansignal/icons";
 
-mockModule("../HistoryActions", () => ({
+mockModule(jest, "../HistoryActions", () => ({
   EditingHistory: () => null,
 }));
 
-mockModule("../../CurrentEntity/GroundTruth", () => ({
+mockModule(jest, "../../CurrentEntity/GroundTruth", () => ({
   GroundTruth: () => null,
 }));
 

@@ -4,7 +4,7 @@ import { FF_LSDV_4930, FF_DEV_1442 } from "../../../utils/feature-flags";
 
 const ff = mockFF();
 
-mockModule("react-konva", () => {
+mockModule(jest, "react-konva", () => {
   const React = require("react");
   const { forwardRef, useImperativeHandle } = React;
 
@@ -83,7 +83,7 @@ mockModule("react-konva", () => {
   };
 });
 
-mockModule("../../Tags/Object", () => ({
+mockModule(jest, "../../Tags/Object", () => ({
   __esModule: true,
   default: ({ item, className, children }) => (
     <div data-testid="object-tag" className={className}>
@@ -92,31 +92,31 @@ mockModule("../../Tags/Object", () => ({
   ),
 }));
 
-mockModule("../../ImageGrid/ImageGrid", () => ({
+mockModule(jest, "../../ImageGrid/ImageGrid", () => ({
   __esModule: true,
   default: () => <div data-testid="image-grid">ImageGrid</div>,
 }));
 
-mockModule("../../ImageTransformer/ImageTransformer", () => ({
+mockModule(jest, "../../ImageTransformer/ImageTransformer", () => ({
   __esModule: true,
   default: () => <div data-testid="image-transformer">ImageTransformer</div>,
 }));
 
-mockModule("../../../core/Tree", () => ({
+mockModule(jest, "../../../core/Tree", () => ({
   __esModule: true,
   default: { renderItem: () => null },
 }));
 
-mockModule("../../Toolbar/Toolbar", () => ({
+mockModule(jest, "../../Toolbar/Toolbar", () => ({
   Toolbar: () => <div data-testid="toolbar">Toolbar</div>,
 }));
 
-mockModule("../Image", () => ({
+mockModule(jest, "../Image", () => ({
   __esModule: true,
   Image: () => <div data-testid="image">Image</div>,
 }));
 
-mockModule("../../../common/Pagination/Pagination", () => ({
+mockModule(jest, "../../../common/Pagination/Pagination", () => ({
   Pagination: ({ currentPage, totalPages }) => (
     <div data-testid="pagination">
       {currentPage} / {totalPages}
@@ -124,7 +124,7 @@ mockModule("../../../common/Pagination/Pagination", () => ({
   ),
 }));
 
-mockModule("../../../utils/resize-observer", () => ({
+mockModule(jest, "../../../utils/resize-observer", () => ({
   __esModule: true,
   default: mock().mockImplementation(function () {
     this.observe = mock();
@@ -133,7 +133,7 @@ mockModule("../../../utils/resize-observer", () => ({
   }),
 }));
 
-mockModule("../../../core/Hotkey", () => {
+mockModule(jest, "../../../core/Hotkey", () => {
   const Hotkey = Object.assign(
     mock(() => ({
       addDescription: mock(),

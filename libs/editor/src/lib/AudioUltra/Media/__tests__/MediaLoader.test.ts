@@ -1,4 +1,4 @@
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 /**
  * Unit tests for MediaLoader (lib/AudioUltra/Media/MediaLoader.ts)
  */

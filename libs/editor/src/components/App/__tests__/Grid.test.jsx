@@ -8,7 +8,7 @@ import { FF_FIT_720_LAZY_LOAD_ANNOTATIONS } from "@humansignal/core/lib/utils/fe
 
 const ff = mockFF();
 
-mockModule("../../AnnotationTabs/AnnotationTabs", () => ({
+mockModule(jest, "../../AnnotationTabs/AnnotationTabs", () => ({
   EntityTab: ({ entity, onClick }) => (
     <div
       data-testid="entity-tab"
@@ -23,25 +23,25 @@ mockModule("../../AnnotationTabs/AnnotationTabs", () => ({
   ),
 }));
 
-mockModule("../Annotation", () => ({
+mockModule(jest, "../Annotation", () => ({
   Annotation: () => <div data-testid="annotation-panel">Annotation</div>,
 }));
 
 const mockFetchAnnotationCached = mock();
 const mockGetCachedAnnotation = mock();
-mockModule("../../../hooks/useAnnotationQuery", () => ({
+mockModule(jest, "../../../hooks/useAnnotationQuery", () => ({
   useAnnotationFetcher: () => ({
     fetchAnnotationCached: mockFetchAnnotationCached,
     getCachedAnnotation: mockGetCachedAnnotation,
   }),
 }));
 
-mockModule("react-virtualized-auto-sizer", () => ({
+mockModule(jest, "react-virtualized-auto-sizer", () => ({
   __esModule: true,
   default: ({ children }) => children({ width: 800, height: 400 }),
 }));
 
-mockModule("react-window", () => {
+mockModule(jest, "react-window", () => {
   const R = require("react");
   const { useEffect } = R;
   const listRefObj = { scrollTo: mock() };

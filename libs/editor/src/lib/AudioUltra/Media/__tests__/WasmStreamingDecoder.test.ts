@@ -1,4 +1,3 @@
-import { mock, describe, it, expect, beforeEach, spyOn, afterEach } from "bun:test";
 import { WasmStreamingDecoder } from "../WasmStreamingDecoder";
 import * as utilsModule from "../../Common/Utils";
 
@@ -11,7 +10,7 @@ const mockDecodeAudioData = mock().mockImplementation(() => {
 const mockUpdateUrl = mock();
 const mockDispose = mock();
 
-mock.module("@humansignal/audio-file-decoder", () => {
+jest.doMock("@humansignal/audio-file-decoder", () => {
   return {
     getAudioDecoderWorker: mock().mockResolvedValue({
       channelCount: 2,

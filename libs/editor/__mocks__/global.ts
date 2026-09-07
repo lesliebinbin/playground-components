@@ -13,7 +13,7 @@ export const mockFF = () => {
 
   const reset = () => {
     // Always reset to clean slate — ignore snapshot which may contain
-    // pollution from earlier test files in Bun's shared process
+    // pollution from earlier test files in the previous runner's shared process
     global.window.APP_SETTINGS = {
       ...originalAppSettings,
       feature_flags: {},

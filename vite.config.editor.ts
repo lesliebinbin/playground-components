@@ -12,6 +12,7 @@ import tailwindConfig from "./tailwind.config.js";
 import { CSS_PREFIX, cssModulesGenerateScopedName } from "./vite-prefix-css-module";
 import postcssImport from "postcss-import";
 import { jsxJsPlugin } from "./vite-lib-jsx-plugins";
+import { publicBasePath } from "./tools/public-base-path.mjs";
 
 const require = createRequire(import.meta.url);
 loadEnv("", __dirname, "");
@@ -32,8 +33,9 @@ const { postcssPrefixLsfClasses, postcssPreProcessGlobalBlocks } = require("./po
  */
 function publicPathCompatPlugin(publicDirAbs: string, outDirAbs: string) {
   function rewriteUrl(req: { url?: string }, _res: unknown, next: () => void) {
-    if (req.url?.startsWith("/public/")) {
-      req.url = req.url.slice("/public".length);
+    const base = publicBasePath();
+    if (req.url?.startsWith(`${base}public/`)) {
+      req.url = base + req.url.slice(`${base}public/`.length);
     }
     next();
   }
@@ -63,7 +65,7 @@ export default defineConfig(async ({ mode }): Promise<UserConfig> => {
 
   return {
     root: path.resolve(__dirname, "libs/editor"),
-    base: "/",
+    base: publicBasePath(),
     publicDir: "public",
     envDir: __dirname,
     define: {

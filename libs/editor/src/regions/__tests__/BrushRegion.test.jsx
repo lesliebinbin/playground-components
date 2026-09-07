@@ -3,15 +3,15 @@
  * View/React coverage is largely from Cypress; these tests cover model logic.
  */
 import { types } from "mobx-state-tree";
-import { importModulesWithBunReload } from "./moduleReload";
+import { importModulesForTest } from "./moduleReload";
 
-mockModule("../../utils/canvas", () => ({
+mockModule(jest, "../../utils/canvas", () => ({
   Region2RLE: mock(() => new Uint8Array([0, 1, 2])),
   RLE2Region: mock(() => null),
   maskDataURL2Image: mock(() => Promise.resolve(null)),
 }));
 
-mockModule("../../tags/object/Image", () => {
+mockModule(jest, "../../tags/object/Image", () => {
   const { types } = require("mobx-state-tree");
   const image = types
     .model("ImageModel", {
@@ -62,7 +62,7 @@ let ImageModel;
 let TestRoot;
 
 const loadModels = async () => {
-  const [brushMod, imageMod] = await importModulesWithBunReload(["../BrushRegion", "../../tags/object/Image"]);
+  const [brushMod, imageMod] = await importModulesForTest(["../BrushRegion", "../../tags/object/Image"]);
 
   BrushRegionModel = brushMod.BrushRegionModel;
   ImageModel = imageMod.ImageModel;

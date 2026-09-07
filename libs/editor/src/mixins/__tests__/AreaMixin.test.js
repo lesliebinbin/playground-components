@@ -8,7 +8,7 @@ import { FF_LSDV_4930 } from "../../utils/feature-flags";
 
 const ff = mockFF();
 
-mockModule("../../regions/Result", () => require("./AreaMixinMockResult"));
+mockModule(jest, "../../regions/Result", () => require("./AreaMixinMockResult"));
 
 delete require.cache[require.resolve("../AreaMixin")];
 delete require.cache[require.resolve("../ReadOnlyMixin")];

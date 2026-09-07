@@ -12,8 +12,8 @@ import { FF_DEV_3391 } from "../../utils/feature-flags";
 const ff = mockFF();
 
 const mockFfIsActive = mock(() => false);
-mockModule("@humansignal/core", () => {
-  const actual = requireActual("@humansignal/core");
+mockModule(jest, "@humansignal/core", () => {
+  const actual = jest.requireActual("@humansignal/core");
   return {
     ...actual,
     ff: { ...actual.ff, isActive: (flag) => mockFfIsActive(flag) },

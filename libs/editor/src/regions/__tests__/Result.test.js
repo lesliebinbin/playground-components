@@ -10,8 +10,8 @@ import { FF_LSDV_4583 } from "../../utils/feature-flags";
 
 const ff = mockFF();
 
-mockModule("@humansignal/core", () => {
-  const actual = requireActual("@humansignal/core");
+mockModule(jest, "@humansignal/core", () => {
+  const actual = jest.requireActual("@humansignal/core");
   return { ...actual, ff: { ...actual.ff, isActive: () => false } };
 });
 
@@ -19,21 +19,20 @@ const { types: t } = require("mobx-state-tree");
 
 let resultModelCache;
 
-const createBunActualStamp = () => `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
 const loadRealResultModel = async () => {
-  const resultModule = await import(`../Result?bun_actual=${createBunActualStamp()}`);
+  const resultModule = await import(`../Result`);
   resultModelCache = resultModule.default ?? resultModule;
 };
 
 const getResultModel = () => {
   if (resultModelCache) return resultModelCache;
-  const resultModule = requireActual("../Result");
+  const resultModule = jest.requireActual("../Result");
   return resultModule.default ?? resultModule;
 };
 
 const getRegistry = () => {
-  const registryModule = requireActual("../../core/Registry");
+  const registryModule = jest.requireActual("../../core/Registry");
   return registryModule.default ?? registryModule;
 };
 

@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import { computeKeypointsVirtualBounds } from "./Utils";
 
 /** Previous hardcoded viewport used by KeypointsVirtual before FIT-2656. */

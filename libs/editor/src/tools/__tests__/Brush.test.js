@@ -13,7 +13,7 @@ const mockCreateBrushSizeCircleCursor = mock((val) => `url('cursor-${val}') auto
 const stageContent = {};
 
 const MockIcon = () => React.createElement("span", { "data-testid": "brush-icon" });
-mockModule("../../components/Node/Node", () => ({
+mockModule(jest, "../../components/Node/Node", () => ({
   NodeViews: {
     BrushRegionModel: {
       icon: MockIcon,

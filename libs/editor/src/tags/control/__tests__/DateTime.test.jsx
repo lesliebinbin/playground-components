@@ -9,9 +9,9 @@ import Registry from "../../../core/Registry";
 import "../../visual/View";
 import "../../object/RichText/index";
 import InfoModal from "../../../components/Infomodal/Infomodal";
-import { HtxDateTime } from "../DateTime";
+const { HtxDateTime } = require("../DateTime");
 
-mockModule("../../../components/Infomodal/Infomodal", () => ({
+mockModule(jest, "../../../components/Infomodal/Infomodal", () => ({
   __esModule: true,
   __skipMerge: true,
   default: { error: mock(), warning: mock(), success: mock(), info: mock() },

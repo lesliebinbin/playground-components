@@ -12,6 +12,7 @@ import postcssImport from "postcss-import";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(dirname, "../../..");
 const requireFromStorybook = createRequire(import.meta.url);
+const { publicBasePath } = requireFromStorybook(path.join(webRoot, "tools/public-base-path.mjs"));
 
 // Storybook evaluates this file under a virtual path like `/libs/storybook/.storybook/main.ts`,
 // so static `../../../…` imports resolve to `/…` on disk. Load web-root modules by absolute path.
@@ -28,6 +29,8 @@ const tailwindConfig =
   (tailwindConfigModule as { default?: typeof tailwindConfigModule }).default ?? tailwindConfigModule;
 
 const config: StorybookConfig = {
+  managerHead: (head) => `<base href="${publicBasePath()}" />${head}`,
+  previewHead: (head) => `<base href="${publicBasePath()}" />${head}`,
   stories: ["../../../libs/**/*.@(mdx|stories.@(js|jsx|ts|tsx))", "../../../apps/**/*.@(mdx|stories.@(js|jsx|ts|tsx))"],
 
   staticDirs: ["../public"],
@@ -40,6 +43,7 @@ const config: StorybookConfig = {
   },
 
   viteFinal: async (viteConfig) => {
+    viteConfig.base = publicBasePath();
     const root = webRoot;
     // Storybook's Vite builder defaults projectRoot to `libs/storybook`, so source under
     // `libs/ui`, `libs/editor`, etc. falls outside `root` and is served via `/@fs/...`.

@@ -6,7 +6,7 @@ import Registry from "../../../../core/Registry";
 import "../../../visual/View";
 import "../index";
 
-mockModule("../view", () => ({
+mockModule(jest, "../view", () => ({
   HtxRichText: () => () => null,
 }));
 
@@ -53,8 +53,8 @@ const mockDomManager = {
   removeSpans: mock(),
   getText: mock(() => ""),
 };
-mockModule("../domManager", () => ({ __esModule: true, default: mock(() => mockDomManager) }));
-mockModule("../../../../utils/selection-tools", () => ({
+mockModule(jest, "../domManager", () => ({ __esModule: true, default: mock(() => mockDomManager) }));
+mockModule(jest, "../../../../utils/selection-tools", () => ({
   rangeToGlobalOffset: mock(() => [0, 10]),
 }));
 

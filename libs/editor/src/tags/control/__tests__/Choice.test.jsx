@@ -8,8 +8,8 @@ import { types, unprotect } from "mobx-state-tree";
 import { HtxChoice } from "../Choice";
 import { ChoicesModel } from "../Choices";
 
-mockModule("../../../core/Tree", () => {
-  const actualModule = requireActual("../../../core/Tree");
+mockModule(jest, "../../../core/Tree", () => {
+  const actualModule = jest.requireActual("../../../core/Tree");
   const actual = actualModule.default ?? actualModule;
   const treeMock = {
     ...actual,

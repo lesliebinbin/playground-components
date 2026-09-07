@@ -12,8 +12,8 @@ import { destroy, getEnv, isAlive, types } from "mobx-state-tree";
 import { VideoVector } from "../VideoVector";
 
 const mockFfActive = mock(() => false);
-mockModule("@humansignal/core", () => {
-  const actual = requireActual("@humansignal/core");
+mockModule(jest, "@humansignal/core", () => {
+  const actual = jest.requireActual("@humansignal/core");
   return {
     ...actual,
     ff: { ...actual.ff, isActive: (flag) => mockFfActive(flag) },
@@ -321,6 +321,7 @@ describe("VideoVector tool", () => {
     it("does not suppress once the guard window has elapsed", () => {
       const { tool } = createTool();
 
+      useFakeTimers();
       setSystemTime(new Date("2024-01-01T00:00:00.000Z"));
       try {
         const region = finishCurrentRegion(tool);
@@ -329,7 +330,7 @@ describe("VideoVector tool", () => {
         setSystemTime(new Date("2024-01-01T00:00:01.000Z"));
         expect(tool.consumeSelectSuppression(region.id)).toBe(false);
       } finally {
-        setSystemTime();
+        useRealTimers();
       }
     });
   });

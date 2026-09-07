@@ -3,7 +3,7 @@
  *
  * We test the concrete `InteractivePromptMixinImpl` / `InteractivePromptMixinNoop`
  * models directly rather than going through the flag-gated `InteractivePromptMixin`
- * alias — Bun's module cache isn't reliably bustable per-test, and the alias
+ * alias — the previous runner's module cache isn't reliably bustable per-test, and the alias
  * is a trivial one-liner (ternary on `ff.isActive(...)`) that doesn't warrant
  * per-case reimport machinery.
  *

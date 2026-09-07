@@ -1,8 +1,8 @@
 import { render } from "@testing-library/react";
 import { getRoot } from "mobx-state-tree";
 
-mockModule("../LabelOnRegion", () => {
-  const actual = requireActual("../LabelOnRegion");
+mockModule(jest, "../LabelOnRegion", () => {
+  const actual = jest.requireActual("../LabelOnRegion");
   return { __esModule: true, __skipMerge: true, ...actual };
 });
 
@@ -17,7 +17,7 @@ import {
   LabelOnOcrBox,
 } from "../LabelOnRegion";
 
-mockModule("react-konva", () => {
+mockModule(jest, "react-konva", () => {
   const mockReact = require("react");
   const mockShape = () => ({ width: () => 60, height: () => 20 });
   const mockContext = {

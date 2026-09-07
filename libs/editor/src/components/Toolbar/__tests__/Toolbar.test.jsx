@@ -2,18 +2,18 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Provider } from "mobx-react";
 
-mockModule("../Toolbar", () => {
-  const actual = requireActual("../Toolbar");
+mockModule(jest, "../Toolbar", () => {
+  const actual = jest.requireActual("../Toolbar");
   return { __esModule: true, __skipMerge: true, ...actual };
 });
 
 import { Toolbar } from "../Toolbar";
 
-mockModule("../../../common/Utils/useWindowSize", () => ({
+mockModule(jest, "../../../common/Utils/useWindowSize", () => ({
   useWindowSize: () => ({ width: 1024, height: 768 }),
 }));
 
-mockModule("../Tool", () => ({
+mockModule(jest, "../Tool", () => ({
   Tool: ({ label, onClick, extra }) => (
     <div data-testid="mock-tool" data-label={label} onClick={onClick}>
       {label}

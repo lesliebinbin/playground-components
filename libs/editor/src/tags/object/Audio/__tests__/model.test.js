@@ -8,10 +8,10 @@ import Registry from "../../../../core/Registry";
 import "../../../visual/View";
 import { AudioModel } from "../model";
 
-mockModule("../model", () => ({
+mockModule(jest, "../model", () => ({
   __esModule: true,
   __skipMerge: true,
-  ...(requireActual("../model") ?? {}),
+  ...(jest.requireActual("../model") ?? {}),
 }));
 
 Registry.addTag("audio", AudioModel, () => null);
@@ -66,8 +66,8 @@ beforeEach(() => {
   });
 });
 
-mockModule("@humansignal/core", () => {
-  const actual = requireActual("@humansignal/core");
+mockModule(jest, "@humansignal/core", () => {
+  const actual = jest.requireActual("@humansignal/core");
   return {
     ...actual,
     ff: {
@@ -90,7 +90,7 @@ function createAudioNode(storeRef = { task: { dataObj: { audio: "/test.mp3" } } 
   if (node?.type === "audio") return node;
 
   try {
-    const actualModelModule = requireActual("../model");
+    const actualModelModule = jest.requireActual("../model");
     const ActualAudioModel = actualModelModule?.AudioModel ?? AudioModel;
     return ActualAudioModel.create({ name: "audio", value: "$audio", type: "audio" });
   } catch {

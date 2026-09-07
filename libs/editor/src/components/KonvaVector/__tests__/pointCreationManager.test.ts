@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import type { BezierPoint } from "../types";
 import { PointCreationManager } from "../pointCreationManager";
 

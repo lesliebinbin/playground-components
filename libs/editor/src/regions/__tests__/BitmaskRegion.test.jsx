@@ -4,7 +4,7 @@
  */
 import { destroy, types } from "mobx-state-tree";
 
-mockModule("../BitmaskRegion/utils", () => ({
+mockModule(jest, "../BitmaskRegion/utils", () => ({
   BitmaskDrawing: {
     begin: mock(({ x, y }) => ({ x, y })),
     draw: mock(({ x, y }) => ({ x, y })),
@@ -13,11 +13,11 @@ mockModule("../BitmaskRegion/utils", () => ({
   isHoveringNonTransparentPixel: mock(() => false),
 }));
 
-mockModule("../BitmaskRegion/contour", () => ({
+mockModule(jest, "../BitmaskRegion/contour", () => ({
   generateMultiShapeOutline: mock(() => []),
 }));
 
-mockModule("../../tags/object/Image", () => {
+mockModule(jest, "../../tags/object/Image", () => {
   const { types } = require("mobx-state-tree");
   const image = types
     .model("ImageModel", {
@@ -120,13 +120,13 @@ import React from "react";
 import { BitmaskRegionModel, HtxBitmask } from "../BitmaskRegion";
 import { ImageModel } from "../../tags/object/Image";
 
-mockModule("../RegionWrapper", () => {
+mockModule(jest, "../RegionWrapper", () => {
   const React = require("react");
   return {
     RegionWrapper: ({ children }) => React.createElement("div", { "data-testid": "region-wrapper" }, children),
   };
 });
-mockModule("react-konva", () => {
+mockModule(jest, "react-konva", () => {
   const React = require("react");
   return {
     Group: ({ children, ...p }) => React.createElement("div", { "data-testid": "konva-group", ...p }, children),
@@ -135,15 +135,12 @@ mockModule("react-konva", () => {
     Rect: (p) => React.createElement("div", { "data-testid": "konva-rect", ...p }),
   };
 });
-mockModule("../../components/ImageView/LabelOnRegion", () => {
+mockModule(jest, "../../components/ImageView/LabelOnRegion", () => {
   const React = require("react");
   return {
     LabelOnMask: () => React.createElement("div", { "data-testid": "label-on-mask" }),
   };
 });
-mockModule("../AliveRegion", () => ({
-  AliveRegion: (Comp) => Comp,
-}));
 
 const TestRoot = types
   .model("TestRoot", {

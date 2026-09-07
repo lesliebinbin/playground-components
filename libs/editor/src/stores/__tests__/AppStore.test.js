@@ -6,7 +6,7 @@ if (typeof globalThis.structuredClone === "undefined") {
   globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
-mockModule("keymaster", () => {
+mockModule(jest, "keymaster", () => {
   let scope = "all";
   const keymaster = () => {};
   keymaster.unbind = () => {};
@@ -51,13 +51,12 @@ const hotkeyMockFactory = () => {
     unbindAll: mock(),
   };
 };
-mockModule("../../core/Hotkey", hotkeyMockFactory);
-mockModule("../core/Hotkey", hotkeyMockFactory);
-mockModule(HOTKEY_MODULE_ABS, hotkeyMockFactory);
-mockModule(HOTKEY_MODULE_URL, hotkeyMockFactory);
+mockModule(jest, "../../core/Hotkey", hotkeyMockFactory);
+mockModule(jest, HOTKEY_MODULE_ABS, hotkeyMockFactory);
+mockModule(jest, HOTKEY_MODULE_URL, hotkeyMockFactory);
 
 const uniqueActualFactory = () => {
-  const actual = requireActual("../../utils/unique");
+  const actual = jest.requireActual("../../utils/unique");
   return {
     __esModule: true,
     __skipMerge: true,
@@ -65,13 +64,12 @@ const uniqueActualFactory = () => {
     default: actual?.default ?? actual,
   };
 };
-mockModule("../../utils/unique", uniqueActualFactory);
-mockModule("../utils/unique", uniqueActualFactory);
-mockModule(UNIQUE_MODULE_ABS, uniqueActualFactory);
-mockModule(UNIQUE_MODULE_URL, uniqueActualFactory);
+mockModule(jest, "../../utils/unique", uniqueActualFactory);
+mockModule(jest, UNIQUE_MODULE_ABS, uniqueActualFactory);
+mockModule(jest, UNIQUE_MODULE_URL, uniqueActualFactory);
 
 const helpersActualFactory = () => {
-  const actual = requireActual("../../core/Helpers");
+  const actual = jest.requireActual("../../core/Helpers");
   return {
     __esModule: true,
     __skipMerge: true,
@@ -79,15 +77,14 @@ const helpersActualFactory = () => {
     default: actual?.default ?? actual,
   };
 };
-mockModule("../../core/Helpers", helpersActualFactory);
-mockModule("../core/Helpers", helpersActualFactory);
-mockModule(HELPERS_MODULE_ABS, helpersActualFactory);
-mockModule(HELPERS_MODULE_URL, helpersActualFactory);
+mockModule(jest, "../../core/Helpers", helpersActualFactory);
+mockModule(jest, HELPERS_MODULE_ABS, helpersActualFactory);
+mockModule(jest, HELPERS_MODULE_URL, helpersActualFactory);
 
 const mockInvoke = mock();
 const mockInvokeFirst = mock();
 const mockHasEvent = mock(() => false);
-mockModule("../../components/Infomodal/Infomodal", () => ({
+mockModule(jest, "../../components/Infomodal/Infomodal", () => ({
   __esModule: true,
   __skipMerge: true,
   default: {

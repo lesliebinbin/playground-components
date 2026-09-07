@@ -1,4 +1,4 @@
-mockModule("../../../core/Hotkey", () => {
+mockModule(jest, "../../../core/Hotkey", () => {
   const addNamed = mock();
   const removeNamed = mock();
   const instance = { addNamed, removeNamed };
@@ -21,8 +21,8 @@ mockModule("../../../core/Hotkey", () => {
 });
 
 import ToolsManager from "../../../tools/Manager";
-spyOn(ToolsManager, "getInstance").mockReturnValue({
-  addToolsFromControl: mock(),
+beforeEach(() => {
+  spyOn(ToolsManager, "getInstance").mockReturnValue({ addToolsFromControl: mock() });
 });
 
 let PolygonModel;
@@ -31,7 +31,7 @@ let HotkeyMock;
 
 beforeAll(async () => {
   const { types } = require("mobx-state-tree");
-  const Polygon = await import(`../Polygon?bun_reload=${Date.now()}`);
+  const Polygon = await import(`../Polygon`);
   PolygonModel = Polygon.PolygonModel;
   HotkeyMock = require("../../../core/Hotkey").Hotkey;
 

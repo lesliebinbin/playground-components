@@ -7,7 +7,6 @@
  * shows the ones it still cannot classify rather than hiding them.
  */
 
-import { describe, expect, it } from "bun:test";
 import { buildDimensionInfoList } from "../agreement-dashboard/agreement-utils";
 import type { DimensionMeta, TaskAgreementResult } from "../agreement-dashboard/types";
 

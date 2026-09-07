@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import { getUserOptionLabel, summarizeSelectedUsers } from "./UserSelect";
 
 describe("Data Manager user option labels", () => {

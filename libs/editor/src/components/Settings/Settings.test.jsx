@@ -1,4 +1,3 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { Hotkey } from "../../core/Hotkey";
 import Settings from "./Settings";
@@ -23,9 +22,9 @@ describe("classic editor hotkey settings", () => {
   const originalNamespaces = Hotkey.namespaces;
 
   beforeEach(() => {
-    // Other Bun files permanently mockModule Hotkey without namespaces().
+    // Other the previous runner files permanently mockModule Hotkey without namespaces().
     // HotkeysDescription calls it when the Hotkeys tab mounts — restore a stub so
-    // this file stays order-independent (bun-testing: mockModule is process-global).
+    // this file starts with the expected hotkey definitions.
     if (typeof Hotkey.namespaces !== "function") {
       Hotkey.namespaces = () => ({});
     }

@@ -27,7 +27,7 @@ DataManager boasts several key features, enhancing data handling within Label St
 
 DataManager is a reusable library rather than a standalone application. It is bundled by a host surface such as the editor or a consuming application. Its API endpoint map and authentication must be configured by that host.
 
-Historical unit-test source remains in the repository, but it uses Bun test APIs and has no npm test command.
+Run unit tests from the repository root with `npm run test:unit -- libs/datamanager`.
 
 #### Events
 

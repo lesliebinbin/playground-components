@@ -367,7 +367,6 @@ interface MenuActionItem {
 function AnnotationContextMenu({ annotation, capabilities, handlers }: AnnotationContextMenuProps) {
   const dropdown = useDropdown();
   // Read the toast context directly so a missing `<ToastProvider>` in tests
-  // (or in environments where Bun inlines `process.env.NODE_ENV` to "production")
   // does not throw — `useToast()` would, while `useContext(ToastContext)` returns
   // `undefined` and we already guard every call with `?.show(...)`.
   const toast = useContext(ToastContext);

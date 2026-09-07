@@ -2,7 +2,7 @@
  * Unit tests for Segment (lib/AudioUltra/Regions/Segment.ts)
  */
 import { Segment } from "../Segment";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 
 function createMockLayer() {
   return {

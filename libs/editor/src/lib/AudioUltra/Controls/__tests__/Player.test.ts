@@ -3,7 +3,7 @@
  * Player is abstract; we test it via Html5Player with mocks.
  */
 import { ff } from "@humansignal/core";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 const { Html5Player } = require("../Html5Player") as any;
 
 function createMockWaveform(overrides: Record<string, unknown> = {}) {

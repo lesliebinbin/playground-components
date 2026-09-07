@@ -59,9 +59,9 @@ const MockVariableSizeList = React.forwardRef(function MockVariableSizeList(
 let TreeStructure: typeof import("./TreeStructure")["default"];
 
 beforeAll(async () => {
-  // `spyOn(...).mockImplementation(forwardRef)` is not callable in Bun; ESM namespace is not assignable.
-  mock.module("react-window", () => ({
-    ...reactWindowModule,
+  // `spyOn(...).mockImplementation(forwardRef)` is not callable in the previous runner; ESM namespace is not assignable.
+  jest.doMock("react-window", () => ({
+    ...jest.requireActual("react-window"),
     VariableSizeList: MockVariableSizeList,
   }));
   const treeMod = await import("./TreeStructure");

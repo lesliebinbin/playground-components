@@ -1,4 +1,3 @@
-import { describe, expect, it } from "bun:test";
 import { buildDeepSearchExpansionPaths, findDeepSearchMatchPaths } from "./deep-search";
 
 const FIT_2107_TASK_SOURCE = {

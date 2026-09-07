@@ -4,7 +4,7 @@
 const { Visualizer } = require("../Visualizer") as any;
 import type { Waveform } from "../../Waveform";
 import type { WaveformAudio } from "../../Media/WaveformAudio";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 import * as uiModule from "@humansignal/ui";
 import { FF_AUDIO_SPECTROGRAMS } from "../../../../utils/feature-flags";
 
@@ -85,7 +85,7 @@ describe("Visualizer", () => {
   let origCancelRaf: typeof globalThis.cancelAnimationFrame;
 
   beforeEach(() => {
-    // Later files (e.g. Audio/view.test.tsx) set FF at module scope; Bun loads the
+    // Later files (e.g. Audio/view.test.tsx) set FF at module scope; the previous runner loads the
     // full suite before running tests, so reset flags to a known baseline here.
     ff.reset();
     ff.set({ [FF_AUDIO_SPECTROGRAMS]: false });
@@ -96,7 +96,7 @@ describe("Visualizer", () => {
     };
     const cancelRaf = () => {};
     // Production code (renderers, playhead) calls bare `requestAnimationFrame`,
-    // which resolves to `globalThis` — and under bun's `--dom` env
+    // which resolves to `globalThis` — and under the jsdom environment
     // `window !== globalThis`, so overriding only `window.requestAnimationFrame`
     // leaves the real rAF in place and the renderer draw loops run forever
     // (hanging the suite until the CI job timeout). Capture on both objects so

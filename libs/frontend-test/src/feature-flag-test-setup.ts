@@ -1,8 +1,8 @@
 /**
- * Reusable test setup for feature flags. Use in Bun (or Vitest) so tests use the real
+ * Reusable test setup for feature flags. Use in Jest so tests use the real
  * feature-flag implementation (editor/datamanager utils/feature-flags) without mocking.
  *
- * In your vitest.setup.ts:
+ * In your Jest setup file:
  *   import "@humansignal/frontend-test/feature-flag-test-setup";
  *
  * In tests that need specific flags on/off:

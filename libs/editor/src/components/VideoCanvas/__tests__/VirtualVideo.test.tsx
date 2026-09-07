@@ -1,5 +1,4 @@
 import { act, render, waitFor } from "@testing-library/react";
-import { describe, it, expect, beforeEach, mock } from "bun:test";
 // InfoModal mock must be pre-registered before requireActual evaluates VirtualVideo
 import "./virtualVideoTestMockSetup";
 
@@ -13,7 +12,7 @@ describe("VirtualVideo", () => {
     // from any `mockModule` overrides applied concurrently by `VideoCanvas.test.tsx`.
     // We fixed `VideoCanvas.test.tsx` to restore the true real modules rather than re-registering
     // the poisoned `requireActual` returns, so this is safe again.
-    const realVirtualVideo = requireActual("../VirtualVideo.tsx") as Record<string, unknown>;
+    const realVirtualVideo = jest.requireActual("../VirtualVideo.tsx") as Record<string, unknown>;
 
     VirtualVideo = realVirtualVideo.VirtualVideo as VirtualVideoComponent;
   });

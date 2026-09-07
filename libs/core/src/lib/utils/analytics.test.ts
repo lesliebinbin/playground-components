@@ -1,5 +1,5 @@
 import { registerAnalytics } from "./analytics";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 
 describe("analytics", () => {
   const testPath = "/page";

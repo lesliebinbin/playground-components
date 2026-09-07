@@ -3,7 +3,7 @@
  */
 import { Playhead } from "../PlayHead";
 import { rgba } from "../../Common/Color";
-import type { Mock } from "bun:test";
+type Mock = jest.Mock;
 
 function createMockVisualizer(overrides = {}) {
   return {

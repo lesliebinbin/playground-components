@@ -1,12 +1,12 @@
 import { render, act } from "@testing-library/react";
 import TimeSeriesVisualizer from "../TimeSeriesVisualizer";
 
-mockModule("@humansignal/ui", () => ({
+mockModule(jest, "@humansignal/ui", () => ({
   getCurrentTheme: mock(() => "Light"),
 }));
 
-mockModule("../../../tags/object/TimeSeries/helpers", () => {
-  const actual = requireActual("../../../tags/object/TimeSeries/helpers");
+mockModule(jest, "../../../tags/object/TimeSeries/helpers", () => {
+  const actual = jest.requireActual("../../../tags/object/TimeSeries/helpers");
   return {
     ...actual,
     getOptimalWidth: mock(() => 1),

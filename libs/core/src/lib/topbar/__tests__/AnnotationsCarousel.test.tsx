@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { AnnotationsCarousel } from "../AnnotationsCarousel";
 import type { AnnotationActionHandlers, AnnotationCapabilities, SharedAnnotation } from "../types";
 
-mockModule("react-virtualized-auto-sizer", () => ({
+mockModule(jest, "react-virtualized-auto-sizer", () => ({
   __esModule: true,
   default: ({ children }: { children: (size: { width: number; height: number }) => unknown }) =>
     children({ width: 400, height: 300 }),

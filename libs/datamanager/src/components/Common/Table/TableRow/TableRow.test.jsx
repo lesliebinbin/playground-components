@@ -4,19 +4,19 @@ import { TableContext } from "../TableContext";
 import { FF_LOPS_E_3 } from "../../../../utils/feature-flags";
 
 // Mock SkeletonLoader
-mockModule("../../SkeletonLoader", () => ({
+mockModule(jest, "../../SkeletonLoader", () => ({
   SkeletonLoader: () => <div data-testid="skeleton-loader">Loading...</div>,
 }));
 
 // Mock feature flags
 let mockFlags = {};
-mockModule("../../../../utils/feature-flags", () => ({
+mockModule(jest, "../../../../utils/feature-flags", () => ({
   FF_LOPS_E_3: "fflag_feat_all_lops_e_3_datasets_short",
   isFF: mock((id) => mockFlags[id] === true),
 }));
 
 // Mock utils
-mockModule("../utils", () => ({
+mockModule(jest, "../utils", () => ({
   getProperty: mock((obj, path) => {
     const keys = path.split(".");
     let result = obj;
@@ -29,7 +29,7 @@ mockModule("../utils", () => ({
 }));
 
 // Mock BEM utility
-mockModule("../../../../utils/bem", () => ({
+mockModule(jest, "../../../../utils/bem", () => ({
   cn: mock((name) => {
     const createCN = (fullName, mods = {}) => {
       const modClasses = Object.entries(mods)
@@ -55,7 +55,7 @@ mockModule("../../../../utils/bem", () => ({
 }));
 
 // Mock styles
-mockModule("./TableRow.prefix.css", () => ({}));
+mockModule(jest, "./TableRow.prefix.css", () => ({}));
 
 describe("TableRow", () => {
   const mockData = {

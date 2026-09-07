@@ -5,6 +5,15 @@ alwaysApply: false
 ---
 # Playground
 
+## Static deployment
+
+From the repository root, run `npm run playground:build` for deployment at `/`,
+or `PUBLIC_BASE_PATH=/custom_label/ npm run playground:build` for a prefixed site.
+Mount `dist/apps/playground` at that prefix. Its `index.html` references assets
+under `/custom_label/playground-assets/`; the on-disk layout is unchanged.
+See the [deployment instructions](../../README.md#deploy-beneath-a-url-prefix)
+for validation rules and a local preview command.
+
 ## Overview
 The LabelStudio Playground is a standalone, embeddable React application for editing and previewing LabelStudio XML labeling configurations. It is designed to be embedded via iframe in documentation or external web applications, providing a focused environment for working with XML-based labeling configs and live previewing the LabelStudio interface.
 

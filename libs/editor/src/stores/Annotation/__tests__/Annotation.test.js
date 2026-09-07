@@ -6,7 +6,7 @@ if (typeof globalThis.structuredClone === "undefined") {
   globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
 
-mockModule("keymaster", () => {
+mockModule(jest, "keymaster", () => {
   let scope = "all";
   const keymaster = () => {};
   keymaster.unbind = () => {};

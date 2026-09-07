@@ -62,7 +62,7 @@ function ensureModalVisible() {
   return true;
 }
 
-/** Slider mock: Bun/happy-dom may not invoke React `onChange` for `fireEvent.change` on range inputs; forward via native listeners. */
+/** Slider mock: the previous runner/happy-dom may not invoke React `onChange` for `fireEvent.change` on range inputs; forward via native listeners. */
 function MockSlider({
   value,
   onChange,

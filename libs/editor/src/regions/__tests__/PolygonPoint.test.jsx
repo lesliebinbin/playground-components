@@ -5,7 +5,7 @@
 import { render } from "@testing-library/react";
 import { getParent, hasParent, types } from "mobx-state-tree";
 
-mockModule("../../tags/object/Image", () => {
+mockModule(jest, "../../tags/object/Image", () => {
   const { types } = require("mobx-state-tree");
   return {
     ImageModel: types
@@ -41,7 +41,7 @@ import { PolygonPointView } from "../PolygonPoint";
 import { PolygonRegionModel } from "../PolygonRegion";
 import { ImageModel } from "../../tags/object/Image";
 
-mockModule("../../hooks/useRegionColor", () => ({
+mockModule(jest, "../../hooks/useRegionColor", () => ({
   useRegionStyles: () => ({ strokeColor: "#000" }),
 }));
 

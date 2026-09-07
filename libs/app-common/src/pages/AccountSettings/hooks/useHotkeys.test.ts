@@ -211,7 +211,7 @@ describe("loadAndApplyProjectHotkeys", () => {
 
   it("does not leak project A editor overrides into project B via Hotkey.keymap", async () => {
     // Stub LSF Hotkey with replace semantics (real setKeymap covered in Hotkey.setKeymap.test.ts).
-    // Avoid cross-package editor imports here — the full bun suite can leave Hotkey.setKeymap undefined.
+    // Avoid cross-package editor imports here — the full unit suite can leave Hotkey.setKeymap undefined.
     const defaultSubmitKey = "ctrl+enter";
     const editorHotkey = {
       keymap: {

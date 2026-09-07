@@ -11,7 +11,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import { getRoot } from "mobx-state-tree";
 
-mockModule("chroma-js", () => {
+mockModule(jest, "chroma-js", () => {
   const hex = (c) => (c && typeof c === "string" ? c : "#000000");
   return (c) => ({ hex: () => hex(c) });
 });
@@ -19,7 +19,7 @@ mockModule("chroma-js", () => {
 const mockDrawMask = mock(() => ({ data: new Uint8Array(0) }));
 const mockMask2DataURL = mock(() => "data:image/png;base64,mock");
 
-mockModule("../../utils/magic-wand", () => ({
+mockModule(jest, "../../utils/magic-wand", () => ({
   drawMask: (...args) => mockDrawMask(...args),
 }));
 beforeEach(() => {
@@ -37,7 +37,7 @@ if (typeof HTMLImageElement !== "undefined" && !HTMLImageElement.prototype.decod
 }
 
 const MockIcon = () => React.createElement("span", { "data-testid": "magic-wand-icon" });
-mockModule("@humansignal/icons", () => ({
+mockModule(jest, "@humansignal/icons", () => ({
   IconMagicWandTool: MockIcon,
 }));
 
@@ -47,7 +47,7 @@ const MockTool = ({ label, ariaLabel, onClick }) =>
     { type: "button", "data-testid": "magic-wand-tool", "aria-label": ariaLabel, onClick },
     label,
   );
-mockModule("../../components/Toolbar/Tool", () => ({ Tool: MockTool }));
+mockModule(jest, "../../components/Toolbar/Tool", () => ({ Tool: MockTool }));
 
 let MagicWand;
 let mask2DataURLSpy;
@@ -172,7 +172,7 @@ describe("MagicWand tool", () => {
       }
     }
     liveTools.length = 0;
-    // Bun keeps module cache across files; drop mocked modules so later files get clean actuals.
+    // the previous runner keeps module cache across files; drop mocked modules so later files get clean actuals.
     mask2DataURLSpy?.mockRestore?.();
     delete require.cache[require.resolve("../MagicWand")];
   });

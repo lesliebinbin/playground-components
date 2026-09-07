@@ -21,16 +21,16 @@ async function triggerVideoLoad() {
   });
 }
 
-mockModule("@humansignal/core", () => {
-  const actual = requireActual("@humansignal/core");
+mockModule(jest, "@humansignal/core", () => {
+  const actual = jest.requireActual("@humansignal/core");
   return { ...actual, ff: { ...actual.ff, isActive: () => false } };
 });
 
-mockModule("@humansignal/icons", () => ({
+mockModule(jest, "@humansignal/icons", () => ({
   IconZoomIn: () => <span data-testid="icon-zoom-in" />,
 }));
 
-mockModule("@humansignal/ui", () => ({
+mockModule(jest, "@humansignal/ui", () => ({
   Button: ({ children, ...props }) => (
     <button type="button" data-testid="ui-button" {...props}>
       {children}
@@ -46,7 +46,7 @@ mockModule("@humansignal/ui", () => ({
   },
 }));
 
-mockModule("../../../../common/Menu/Menu", () => ({
+mockModule(jest, "../../../../common/Menu/Menu", () => ({
   Menu: ({ children }) => <div data-testid="menu">{children}</div>,
   Item: ({ children, onClick }) => (
     <button type="button" data-testid="menu-item" onClick={onClick}>
@@ -55,29 +55,29 @@ mockModule("../../../../common/Menu/Menu", () => ({
   ),
 }));
 
-mockModule("../../../../components/ErrorMessage/ErrorMessage", () => ({
+mockModule(jest, "../../../../components/ErrorMessage/ErrorMessage", () => ({
   ErrorMessage: ({ error }) => <div data-testid="error-message">{String(error)}</div>,
 }));
 
-mockModule("../../../../components/Tags/Object", () => ({
+mockModule(jest, "../../../../components/Tags/Object", () => ({
   __esModule: true,
   default: ({ item, children }) => <div data-testid="object-tag">{children}</div>,
 }));
 
-mockModule("../../../../components/Timeline/Controls/VideoConfigControl", () => ({
+mockModule(jest, "../../../../components/Timeline/Controls/VideoConfigControl", () => ({
   VideoConfigControl: () => <div data-testid="video-config-control" />,
 }));
 
-mockModule("../../../../ml-interactive/InteractiveOverlayHost", () => ({
+mockModule(jest, "../../../../ml-interactive/InteractiveOverlayHost", () => ({
   InteractiveOverlayHost: () => <div data-testid="interactive-overlay-host" />,
 }));
 
-mockModule("../../../../ml-interactive/InteractiveActionsBar", () => ({
+mockModule(jest, "../../../../ml-interactive/InteractiveActionsBar", () => ({
   InteractiveActionsBar: () => <div data-testid="interactive-actions-bar" />,
 }));
 
 const mockTimelineProps = {};
-mockModule("../../../../components/Timeline/Timeline", () => ({
+mockModule(jest, "../../../../components/Timeline/Timeline", () => ({
   Timeline: (props) => {
     Object.assign(mockTimelineProps, props);
     return <div data-testid="timeline">Timeline</div>;
@@ -85,7 +85,7 @@ mockModule("../../../../components/Timeline/Timeline", () => ({
 }));
 
 const mockVideoCanvasProps = {};
-mockModule("../../../../components/VideoCanvas/VideoCanvas", () => ({
+mockModule(jest, "../../../../components/VideoCanvas/VideoCanvas", () => ({
   clampZoom: (z) => Math.max(0.1, Math.min(10, z)),
   VideoCanvas: (props) => {
     Object.assign(mockVideoCanvasProps, props);
@@ -95,7 +95,7 @@ mockModule("../../../../components/VideoCanvas/VideoCanvas", () => ({
 
 let mockKonvaStage = null;
 
-mockModule("../VideoRegions", () => ({
+mockModule(jest, "../VideoRegions", () => ({
   VideoRegions: ({ stageRef }) => {
     if (stageRef && mockKonvaStage) {
       stageRef.current = mockKonvaStage;
@@ -104,7 +104,7 @@ mockModule("../VideoRegions", () => ({
   },
 }));
 
-mockModule("../../../../hooks/useFullscreen", () => ({
+mockModule(jest, "../../../../hooks/useFullscreen", () => ({
   useFullscreen: () => ({
     enter: mock(),
     exit: mock(),
@@ -112,7 +112,7 @@ mockModule("../../../../hooks/useFullscreen", () => ({
   }),
 }));
 
-mockModule("../../../../hooks/useToggle", () => {
+mockModule(jest, "../../../../hooks/useToggle", () => {
   const { useState } = require("react");
   return {
     useToggle: (initial) => {
@@ -122,7 +122,7 @@ mockModule("../../../../hooks/useToggle", () => {
   };
 });
 
-mockModule("../../../../utils/resize-observer", () => ({
+mockModule(jest, "../../../../utils/resize-observer", () => ({
   __esModule: true,
   default: mock().mockImplementation(function (callback) {
     this._callback = callback;
@@ -141,8 +141,8 @@ mockModule("../../../../utils/resize-observer", () => ({
   }),
 }));
 
-mockModule("mobx-state-tree", () => {
-  const actual = requireActual("mobx-state-tree");
+mockModule(jest, "mobx-state-tree", () => {
+  const actual = jest.requireActual("mobx-state-tree");
   return {
     ...actual,
     getEnv: () => ({

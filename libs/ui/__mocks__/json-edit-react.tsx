@@ -1,4 +1,3 @@
-import { mock } from "bun:test";
 
 /** Stub that captures props for tests; real behavior is in JsonViewer, we test the filter it passes. */
 export const JsonEditor = (props: Record<string, unknown>) => {

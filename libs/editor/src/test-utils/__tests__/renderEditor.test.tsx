@@ -3,22 +3,17 @@
  * that can replace equivalent Cypress tests (e.g. outliner region count, serialization shape).
  * See E2E_TO_CYPRESS_AUDIT.md for migration list.
  *
- * Excluded from editor unit run until the full-app test environment is ready
- * (MST model load order). Run via Cypress or a dedicated integration setup
- * in the meantime.
  */
 import { renderEditor } from "../renderEditor";
 
-const describeRenderEditor = typeof Bun !== "undefined" ? describe.skip : describe;
-
-describeRenderEditor("renderEditor", () => {
+describe("renderEditor", () => {
   it("exports renderEditor as an async function", () => {
     expect(typeof renderEditor).toBe("function");
     expect(renderEditor.constructor.name).toBe("AsyncFunction");
   });
 
   it("renders editor with config and task and returns store and serialize", async () => {
-    const { getByText, serialize, unmount } = await renderEditor({
+    const { findByText, serialize, unmount } = await renderEditor({
       config: `<View>
         <Text name="text" value="$text"/>
         <Choices name="choice" toName="text">
@@ -33,7 +28,7 @@ describeRenderEditor("renderEditor", () => {
       },
     });
 
-    expect(getByText("Hello")).toBeInTheDocument();
+    expect(await findByText("Hello")).toBeInTheDocument();
     const result = serialize();
     expect(result).toBeDefined();
     unmount();

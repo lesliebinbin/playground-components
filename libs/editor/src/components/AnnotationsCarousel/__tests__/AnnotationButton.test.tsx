@@ -2,7 +2,7 @@
  * Integration tests for the classic-editor (MST) `AnnotationButton` wrapper.
  *
  * After FIT-1774 the visual + interaction surface lives in the shared
- * `@humansignal/core/lib/topbar/AnnotationButton` (covered by Bun tests under
+ * `@humansignal/core/lib/topbar/AnnotationButton` (covered by the previous runner tests under
  * `libs/core/src/lib/topbar/__tests__/`). The tests in this file remain as the
  * source of truth for the MST → props/handler mapping done by the wrapper —
  * lazy stub hydration, `useResolveUser`/`enrichUsers` plumbing, the
@@ -10,7 +10,7 @@
  * `task.source`, and the wiring of MST actions onto SharedAnnotation handlers.
  *
  * If you need to add coverage for purely presentational behavior, prefer the
- * shared Bun suite. Add tests here only when the assertion depends on MST state
+ * shared the previous runner suite. Add tests here only when the assertion depends on MST state
  * or wrapper-only side effects.
  */
 import type { ReactElement } from "react";

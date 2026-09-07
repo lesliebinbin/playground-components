@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
 import { effectiveHotkeys, mergeCustomHotkeys, toEditorKeymap } from "./effectiveHotkeys";
 
 describe("effectiveHotkeys", () => {

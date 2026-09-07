@@ -4,7 +4,7 @@
 import { Geometry } from "../Geometry";
 let BoundingBox;
 
-mockModule("../Geometry", () => ({
+mockModule(jest, "../Geometry", () => ({
   Geometry: {
     getDOMBBox: mock(),
     clampBBox: mock((bbox) => ({ ...bbox })),
@@ -16,7 +16,7 @@ describe("BoundingBox", () => {
   beforeAll(async () => {
     const boundingBoxAbs = require.resolve("../BoundingBox");
     const boundingBoxUrl = require("node:url").pathToFileURL(boundingBoxAbs).href;
-    const boundingBoxModule = await import(`${boundingBoxUrl}?bun_reload=${Date.now()}`);
+    const boundingBoxModule = await import(`${boundingBoxUrl}`);
     BoundingBox = boundingBoxModule.BoundingBox;
   });
 
