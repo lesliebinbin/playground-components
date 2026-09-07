@@ -2,6 +2,13 @@
 
 Label Studio Web is a standalone npm monorepo for reusable Label Studio frontend libraries and static frontend surfaces. It does not contain the Label Studio Python/Django application.
 
+Originally extracted from the `web/` directory of
+[HumanSignal/label-studio](https://github.com/HumanSignal/label-studio), this
+repository can be developed and built independently of the backend checkout.
+Installation, builds, local serving, and unit tests use npm and Node.
+Use that upstream repository to trace the original implementation and compare
+future changes.
+
 ## Install
 
 ```sh
@@ -18,12 +25,19 @@ npm ci
 
 `npm run build` builds all three surfaces. `npm run lsf:serve-build` serves an already-built editor bundle with Node.
 
+Playground uses a committed [feature-flag snapshot](apps/playground/src/config/feature-flags.json)
+copied from the upstream backend's `label_studio/feature_flags.json`, so its build
+does not require the backend's configuration files.
+
 ## Deploy beneath a URL prefix
 
 `PUBLIC_BASE_PATH` sets the public URL prefix for all three static builds. When unset,
 it defaults to `/`. Use a leading and trailing slash; nested segments are supported.
 Segments may contain letters, numbers, underscores, and hyphens. Invalid values
 (including an empty value, full URLs, and doubled slashes) fail the build.
+
+The prefix applies to bundled JavaScript, CSS, fonts, images, favicons, and
+lazy-loaded chunks, including Storybook's manager and preview pages.
 
 ```sh
 # Domain-root deployment
