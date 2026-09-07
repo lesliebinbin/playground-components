@@ -1,11 +1,13 @@
 # Playground components
 
-Two conceptual responsibilities assembled in one runnable application:
+Three conceptual responsibilities assembled in one runnable application:
 
 1. **Annotation editing:** an isolated session around the existing Label Studio
    editor, with rectangle import/export and observable history.
 2. **Configuration and task preparation:** XML validation, configurable labels and
    bindings, source-image loading, and complete task export/import.
+3. **Application composition shell:** display modes, shell theme, stable
+   configuration/input/output inspection, and session controls around the editor.
 
 Application code stays in `apps/playground`. Existing editor/shared libraries and
 root tooling are unchanged. The repository was copied locally from frontend
@@ -24,7 +26,10 @@ PORT=4201 STATIC_ROOT=dist/apps/playground node libs/editor/server.mjs
 
 Open [the components app](http://localhost:4201/?component-probe=1). The original
 Playground still opens at `/`. The query name is retained for compatibility with
-the first component. For development use `npm run playground:serve` on port 4200.
+the first component. Set `mode=all`, `mode=preview`, or `mode=preview-inline` to
+choose an initial shell display mode; an unknown value uses full mode. Presentation
+and disclosure preferences are in memory and reset on reload. For development use
+`npm run playground:serve` on port 4200.
 
 ```sh
 npm run test:unit -- --runInBand apps/playground
@@ -53,6 +58,17 @@ as necessary. It runs real pointer drawing as well as configuration/source tests
 6. Edit an annotation, then request a replacement. **Keep editing** cancels;
    **Replace task** proceeds; **Export & replace** downloads the current complete
    task before replacement. A replacement resets local undo history.
+7. Use the header to choose **Full mode**, **Preview**, or **Preview inline**.
+   Full mode restores preparation, fixture, import/export, and inspector controls.
+   The configuration and inspector disclosures retain their state and any
+   unapplied XML/source draft while hidden. **Copy active XML** always copies the
+   prepared active task, not an unapplied draft, and reports clipboard failures.
+   **Shell theme** changes only this surrounding application shell.
+
+The **Task input** inspector shows the prepared task that initialized the active
+editor. The **Result inspector** shows the current edited output. Embedded image
+data is summarized in Task input to avoid rendering large base64 bytes there; full
+task export keeps it unchanged.
 
 The fixture buttons are explicit sample selection. A missing or failed user image
 never falls back to a sample. Image loading and decoding complete before activation;
@@ -99,17 +115,28 @@ The parent retains exported values for inspection, never a competing editable st
 
 ## Validation and limits
 
-On 2026-09-08, all 102 Playground tests and the production build passed. Browser
+Implemented through ACP with architect review on 2026-09-08. On that date, all 102
+Playground tests and the production build passed. The final browser regression
+passed after the reviewed native keyboard, clipboard, and dark-dialog checks.
+Browser
 checks cover the original editing/lifecycle behavior plus configurable names and
 labels, XML errors, used-label removal, dirty-work cancel/replace, upload/dimensions,
-complete task reload, failed images, and delayed-load supersession.
+complete task reload, failed images, delayed-load supersession, native keyboard
+disclosures, clipboard success/failure, dark-shell contrast, and compact layouts.
+They retain exact iframe element/document/engine references, selected-region IDs,
+result output, and Undo/Redo history through display modes, disclosure changes,
+and shell-theme changes.
 
 The inherited Biome configuration is incompatible with the locally installed CLI;
 changed files were formatted with an isolated configuration. Root lint and full
 repository test/build coverage are not claimed. Production bundle-size warnings remain.
 
 This is still an image-rectangle slice. There is no durable draft persistence,
-workflow acceptance, or ComfyUI integration. Exporting is not acceptance. Native
+workflow acceptance, ComfyUI integration, configuration sharing, or broader
+modality support. Exporting is not acceptance. Preview inline is a compact shell
+presentation; it does not assert parity with the baseline editor's internal
+bottom-panel behavior. Shell theme intentionally does not theme the embedded
+editor. Native
 editor bounds adjustment, hit-testing, gesture cancellation, and arbitrary actor
 history remain compatibility limits from the first component. Keyboard completeness,
 all image formats, remote XML configuration, and full Playground parity are not

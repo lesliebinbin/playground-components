@@ -66,10 +66,14 @@ try {
       socket.send(JSON.stringify({ id: request, method, params }));
     });
   const evaluate = async (expression) => {
-    const result = await call("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
-    if (result.exceptionDetails)
-      throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
-    return result.result?.value;
+    try {
+      const result = await call("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+      if (result.exceptionDetails)
+        throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
+      return result.result?.value;
+    } catch (error) {
+      throw new Error(`Runtime.evaluate failed for ${expression}: ${String(error)}`);
+    }
   };
   const wait = async (expression, label, timeout = 45000) => {
     const until = Date.now() + timeout;
@@ -84,6 +88,13 @@ try {
       `(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent === ${JSON.stringify(name)}); if (!b || b.disabled) throw new Error('Button unavailable: ' + ${JSON.stringify(name)}); b.click(); })()`,
     );
   const snapshot = () => evaluate("JSON.parse(document.querySelector('[data-testid=probe-output]').textContent)");
+  const setField = (id, value) =>
+    evaluate(`(() => {
+    const el = document.getElementById(${JSON.stringify(id)});
+    const proto = el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${JSON.stringify(value)});
+    el.dispatchEvent(new Event('input', {bubbles:true}));
+  })()`);
   const ready = () =>
     wait(
       "document.querySelectorAll('iframe').length === 1 && !!document.querySelector('iframe[title=\"Annotation editor\"]') && document.body.innerText.includes('Ready to annotate')",
@@ -93,6 +104,8 @@ try {
   await call("Page.enable");
   await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
   await call("Page.navigate", { url: target });
+  await call("Page.bringToFront");
+  await evaluate("void window.focus()");
   await ready();
   const initial = await snapshot();
   assert.equal(initial.annotations[0].origin, "ai");
@@ -113,6 +126,191 @@ try {
   await wait(
     "JSON.parse(document.querySelector('[data-testid=probe-output]').textContent).annotations[0].x > 149",
     "Redo",
+  );
+  await evaluate(`(() => {
+    const frame = document.querySelector('iframe');
+    const annotation = frame.contentWindow.Htx.annotationStore.selected;
+    annotation.selectArea([...annotation.areas.values()].find(area => area.cleanId === 'r1'));
+    window.__presentationContinuity = {
+      element: frame,
+      document: frame.contentDocument,
+      engine: frame.contentWindow.Htx,
+      output: document.querySelector('[data-testid=probe-output]').textContent,
+      selectedIds: annotation.selectedRegions.map(region => region.cleanId),
+    };
+  })()`);
+  await wait(
+    "document.querySelector('iframe').contentWindow.Htx.annotationStore.selected.selectedRegions.length > 0",
+    "Selection setup",
+  );
+  const activeConfig = await evaluate("document.getElementById('task-config').value");
+  await setField("task-config", `${activeConfig}\n<!-- unapplied draft -->`);
+  await click("Hide configuration");
+  await wait("document.querySelector('#probe-configuration').hidden", "Configuration disclosure close");
+  await evaluate(`(() => {
+    const button = document.querySelector('[aria-controls=probe-configuration]');
+    button.focus();
+    return document.hasFocus() && document.activeElement === button;
+  })()`);
+  assert.equal(
+    await evaluate(
+      "document.hasFocus() && document.activeElement === document.querySelector('[aria-controls=probe-configuration]')",
+    ),
+    true,
+    "Configuration disclosure must hold document focus",
+  );
+  await call("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    key: "Enter",
+    code: "Enter",
+    text: "\r",
+    unmodifiedText: "\r",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await call("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Enter",
+    code: "Enter",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await wait("!document.querySelector('#probe-configuration').hidden", "Configuration disclosure keyboard open");
+  assert.equal(
+    await evaluate("document.querySelector('[aria-controls=probe-configuration]').getAttribute('aria-expanded')"),
+    "true",
+  );
+  assert.equal(
+    await evaluate("document.getElementById('task-config').value.endsWith('<!-- unapplied draft -->')"),
+    true,
+  );
+  await evaluate(`(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async text => { window.__copiedActiveConfig = text; } },
+    });
+  })()`);
+  await click("Copy active XML");
+  await wait("document.body.innerText.includes('Active configuration copied.')", "Configuration copy success");
+  assert.equal(await evaluate("window.__copiedActiveConfig"), activeConfig);
+  const continuity = () =>
+    evaluate(`(() => {
+      const saved = window.__presentationContinuity;
+      const frame = document.querySelector('iframe');
+      const annotation = frame.contentWindow.Htx.annotationStore.selected;
+      return frame === saved.element &&
+        frame.contentDocument === saved.document &&
+        frame.contentWindow.Htx === saved.engine &&
+        document.querySelector('[data-testid=probe-output]').textContent === saved.output &&
+        JSON.stringify(annotation.selectedRegions.map(region => region.cleanId)) === JSON.stringify(saved.selectedIds);
+    })()`);
+  await click("Hide inspectors");
+  await wait("document.querySelector('#probe-inspection').hidden", "Inspector disclosure close");
+  assert.equal(
+    await evaluate(
+      "document.querySelector('[aria-controls=probe-inspection]').getAttribute('aria-expanded') === 'false' && document.querySelector('#probe-inspection').hidden",
+    ),
+    true,
+  );
+  assert.equal(await continuity(), true, "Inspector collapse must retain frame continuity");
+  await click("Show inspectors");
+  await wait("!document.querySelector('#probe-inspection').hidden", "Inspector disclosure open");
+  assert.equal(await continuity(), true, "Inspector expansion must retain frame continuity");
+  for (const mode of ["Preview", "Preview inline", "Full mode"]) {
+    await click(mode);
+    await wait(
+      `document.querySelector('[aria-label="Display mode"] button[aria-pressed="true"]').textContent === ${JSON.stringify(mode)}`,
+      `${mode} commit`,
+    );
+    assert.equal(
+      await continuity(),
+      true,
+      `${mode} must retain the active frame, document, engine, result, and selection`,
+    );
+  }
+  assert.equal(
+    await evaluate("document.getElementById('task-config').value.endsWith('<!-- unapplied draft -->')"),
+    true,
+    "Draft XML must survive display changes",
+  );
+  assert.equal(
+    await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent === 'Undo').disabled"),
+    false,
+  );
+  await click("Undo");
+  await wait(
+    "JSON.parse(document.querySelector('[data-testid=probe-output]').textContent).annotations[0].x === 100",
+    "Undo after presentation changes",
+  );
+  assert.equal(
+    await evaluate("[...document.querySelectorAll('button')].find(b => b.textContent === 'Redo').disabled"),
+    false,
+  );
+  await click("Redo");
+  await wait(
+    "JSON.parse(document.querySelector('[data-testid=probe-output]').textContent).annotations[0].x > 149",
+    "Redo after presentation changes",
+  );
+  await evaluate(`(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async () => { throw new Error('Permission denied'); } },
+    });
+  })()`);
+  await click("Copy active XML");
+  await wait(
+    "document.querySelector('[role=alert]').textContent.includes('Permission denied')",
+    "Configuration copy failure",
+  );
+  await click("Shell theme: light");
+  await wait("!!document.querySelector('.probe-theme-dark')", "Shell dark theme");
+  assert.equal(await continuity(), true, "Shell theme must retain frame continuity");
+  const darkContrast = await evaluate(`(() => {
+    const field = document.getElementById('task-config');
+    const paragraph = document.querySelector('.task-fields p');
+    const rgb = value => value.match(/\\d+/g).map(Number);
+    const luminance = ([r, g, b]) => [r, g, b].map(channel => {
+      const normalized = channel / 255;
+      return normalized <= .03928 ? normalized / 12.92 : ((normalized + .055) / 1.055) ** 2.4;
+    }).reduce((total, channel, index) => total + channel * [0.2126, .7152, .0722][index], 0);
+    const contrast = (a, b) => {
+      const [lighter, darker] = [luminance(rgb(a)), luminance(rgb(b))].sort((x, y) => y - x);
+      return (lighter + .05) / (darker + .05);
+    };
+    return {
+      field: contrast(getComputedStyle(field).color, getComputedStyle(field).backgroundColor),
+      paragraph: contrast(getComputedStyle(paragraph).color, getComputedStyle(document.querySelector('.probe-app')).backgroundColor),
+    };
+  })()`);
+  assert(darkContrast.field >= 4.5, `Dark XML field contrast is too low: ${darkContrast.field}`);
+  assert(darkContrast.paragraph >= 4.5, `Dark paragraph contrast is too low: ${darkContrast.paragraph}`);
+  await call("Emulation.setDeviceMetricsOverride", { width: 390, height: 700, deviceScaleFactor: 1, mobile: false });
+  await click("Preview inline");
+  await wait(
+    `document.querySelector('[aria-label="Display mode"] button[aria-pressed="true"]').textContent === "Preview inline"`,
+    "Compact mode commit",
+  );
+  assert.equal(
+    await evaluate("document.documentElement.scrollWidth <= window.innerWidth"),
+    true,
+    "Compact shell must not overflow",
+  );
+  await click("Full mode");
+  await wait(
+    "getComputedStyle(document.querySelector('.probe-full-only')).display !== 'none'",
+    "Full mode recoverability",
+  );
+  await call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false });
+  await evaluate(`(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async text => { window.__copiedActiveConfig = text; } },
+    });
+  })()`);
+  await click("Copy active XML");
+  await wait(
+    "!document.querySelector('[role=alert]')?.textContent.includes('Permission denied')",
+    "Clipboard error recovery",
   );
   await click("Toggle label");
   await wait(
@@ -198,13 +396,6 @@ try {
   );
   await click("Export snapshot");
   await wait("document.querySelector('textarea:not([id])').value.includes('Vehicle')", "Final export");
-  const setField = (id, value) =>
-    evaluate(`(() => {
-    const el = document.getElementById(${JSON.stringify(id)});
-    const proto = el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-    Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${JSON.stringify(value)});
-    el.dispatchEvent(new Event('input', {bubbles:true}));
-  })()`);
   const originalConfig = await evaluate("document.getElementById('task-config').value");
   const beforeInvalidConfig = await evaluate("document.querySelector('iframe').src");
   await setField("task-config", "<View>");
@@ -240,6 +431,17 @@ try {
   const editedFrame = await evaluate("document.querySelector('iframe').src");
   await click("Load human fixture");
   await wait("!!document.querySelector('dialog[open]')", "Dirty-work disposition");
+  const dialogContrast = await evaluate(`(() => {
+    const dialog = document.querySelector('dialog[open]');
+    const rgb = value => value.match(/\\d+/g).map(Number);
+    const luminance = ([r, g, b]) => [r, g, b].map(channel => {
+      const normalized = channel / 255;
+      return normalized <= .03928 ? normalized / 12.92 : ((normalized + .055) / 1.055) ** 2.4;
+    }).reduce((total, channel, index) => total + channel * [0.2126, .7152, .0722][index], 0);
+    const [lighter, darker] = [luminance(rgb(getComputedStyle(dialog.querySelector('p')).color)), luminance(rgb(getComputedStyle(dialog).backgroundColor))].sort((a, b) => b - a);
+    return (lighter + .05) / (darker + .05);
+  })()`);
+  assert(dialogContrast >= 4.5, `Dark replacement dialog contrast is too low: ${dialogContrast}`);
   await click("Keep editing");
   assert.equal(await evaluate("document.querySelector('iframe').src"), editedFrame);
   await click("Load human fixture");

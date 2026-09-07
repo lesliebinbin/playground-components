@@ -15,6 +15,29 @@ const fixtureTask = (actor: "human" | "ai"): TaskDocument => ({
 const INITIAL_TASK = fixtureTask("ai");
 type Session = { id: string; input: TaskDocument };
 type Output = { snapshot: Snapshot; wire: unknown[]; canUndo: boolean; canRedo: boolean; sequence: number };
+type DisplayMode = "all" | "preview" | "preview-inline";
+type Disclosure = "configuration" | "inspection";
+
+const displayModes: { mode: DisplayMode; label: string }[] = [
+  { mode: "all", label: "Full mode" },
+  { mode: "preview", label: "Preview" },
+  { mode: "preview-inline", label: "Preview inline" },
+];
+
+const initialDisplayMode = (): DisplayMode => {
+  const mode = new URLSearchParams(location.search).get("mode");
+  return displayModes.some(({ mode: valid }) => valid === mode) ? (mode as DisplayMode) : "all";
+};
+
+const inspectedTask = (task: TaskDocument) => ({
+  format: task.format,
+  config: task.config,
+  imageUrl: task.imageUrl.startsWith("data:")
+    ? "[Embedded image bytes omitted from this inspector; complete task export retains them.]"
+    : task.imageUrl,
+  snapshot: task.snapshot,
+});
+
 export function ProbeApp() {
   const [active, setActive] = useState<Session | null>(null);
   const [candidate, setCandidate] = useState<Session | null>(null);
@@ -26,6 +49,15 @@ export function ProbeApp() {
   const [events, setEvents] = useState<string[]>([]);
   const [preparing, setPreparing] = useState(false);
   const [replacement, setReplacement] = useState<{ task: TaskDocument; label: string } | null>(null);
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(initialDisplayMode);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [disclosures, setDisclosures] = useState<Record<Disclosure, boolean>>({
+    configuration: true,
+    inspection: true,
+  });
+  const [copyState, setCopyState] = useState<"idle" | "pending" | "success" | "error">("idle");
+  const [copyError, setCopyError] = useState("");
+  const copyOperation = useRef(0);
   const request = useRef<AbortController | null>(null);
   const currentOutput = useRef<Output | null>(null);
   const baseline = useRef("");
@@ -163,6 +195,9 @@ export function ProbeApp() {
         baseline.current = JSON.stringify(data.snapshot);
         setMessage("Ready to annotate");
         setError("");
+        copyOperation.current++;
+        setCopyState("idle");
+        setCopyError("");
         log("Ready · previous frame disposed");
       } else if (current?.id === session.id && ["CHANGE", "EXPORTED"].includes(data.type)) {
         setOutput(data);
@@ -210,21 +245,64 @@ export function ProbeApp() {
     setCandidate(null);
     setOutput(null);
     setError("");
+    copyOperation.current++;
+    setCopyState("idle");
+    setCopyError("");
     setMessage("Disposed · load a fixture to start again");
     log("Disposed all frames");
   };
   const busy = !!candidate || preparing || !!replacement || !active;
+  const activeTask = active?.input ?? null;
+  const toggleDisclosure = (disclosure: Disclosure) =>
+    setDisclosures((current) => ({ ...current, [disclosure]: !current[disclosure] }));
+  const copyActiveConfiguration = async () => {
+    if (!activeTask || copyState === "pending") return;
+    const sessionId = active?.id;
+    const operation = ++copyOperation.current;
+    setCopyState("pending");
+    setCopyError("");
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard access is unavailable in this browser.");
+      await navigator.clipboard.writeText(activeTask.config);
+      if (latest.current.active?.id !== sessionId || copyOperation.current !== operation) return;
+      setCopyState("success");
+    } catch (copyFailure) {
+      if (latest.current.active?.id !== sessionId || copyOperation.current !== operation) return;
+      setCopyState("error");
+      setCopyError(
+        copyFailure instanceof Error
+          ? `Could not copy active configuration: ${copyFailure.message}`
+          : "Could not copy active configuration.",
+      );
+    }
+  };
   return (
-    <main className="probe-app">
+    <main className={`probe-app probe-mode-${displayMode} probe-theme-${theme}`}>
       <header className="probe-header">
         <div>
           <span className="probe-eyebrow">PLAYGROUND / COMPONENT LAB</span>
           <h1>Your data. Your labels.</h1>
           <p>Prepare a task, annotate it, and take the result with you.</p>
         </div>
-        <a href="?">Open Playground ↗</a>
+        <div className="probe-header-actions">
+          <div className="probe-mode-controls" aria-label="Display mode">
+            {displayModes.map(({ mode, label }) => (
+              <button key={mode} aria-pressed={displayMode === mode} onClick={() => setDisplayMode(mode)}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <button
+            className="probe-theme-toggle"
+            aria-pressed={theme === "dark"}
+            onClick={() => setTheme((current) => (current === "light" ? "dark" : "light"))}
+          >
+            Shell theme: {theme}
+          </button>
+          <a href="?">Open Playground ↗</a>
+        </div>
       </header>
-      <section className="probe-toolbar" aria-label="Session controls">
+      <section className="probe-toolbar probe-full-only" aria-label="Session controls">
         <div>
           <button onClick={() => prepare(fixtureTask("ai"), "AI fixture")}>Load AI fixture</button>
           <button onClick={() => prepare(fixtureTask("human"), "human fixture")}>Load human fixture</button>
@@ -253,6 +331,16 @@ export function ProbeApp() {
       {error && (
         <div className="probe-error" role="alert">
           {error}
+        </div>
+      )}
+      {copyState === "success" && (
+        <div className="probe-copy-status" role="status">
+          Active configuration copied.
+        </div>
+      )}
+      {copyError && (
+        <div className="probe-error" role="alert">
+          {copyError}
         </div>
       )}
       {replacement && (
@@ -287,12 +375,29 @@ export function ProbeApp() {
           </button>
         </dialog>
       )}
-      <TaskPreparation
-        task={active?.input ?? INITIAL_TASK}
-        busy={!!candidate || preparing || !!replacement}
-        onApply={applyDraft}
-        onDraftChange={cancelPreparation}
-      />
+      <section className="probe-disclosure probe-full-only" aria-label="Configuration controls">
+        <div className="probe-disclosure-actions">
+          <button
+            className="probe-disclosure-trigger"
+            aria-expanded={disclosures.configuration}
+            aria-controls="probe-configuration"
+            onClick={() => toggleDisclosure("configuration")}
+          >
+            {disclosures.configuration ? "Hide configuration" : "Show configuration"}
+          </button>
+          <button disabled={!activeTask || copyState === "pending"} onClick={() => void copyActiveConfiguration()}>
+            {copyState === "pending" ? "Copying active XML…" : "Copy active XML"}
+          </button>
+        </div>
+        <div id="probe-configuration" className="probe-disclosure-content" hidden={!disclosures.configuration}>
+          <TaskPreparation
+            task={active?.input ?? INITIAL_TASK}
+            busy={!!candidate || preparing || !!replacement}
+            onApply={applyDraft}
+            onDraftChange={cancelPreparation}
+          />
+        </div>
+      </section>
       <div className="probe-grid">
         <section className="probe-workbench">
           <div className="probe-section-title">
@@ -341,24 +446,47 @@ export function ProbeApp() {
           </div>
         </section>
         <aside className="probe-inspector">
-          <div className="probe-section-title">
-            <h2>Result inspector</h2>
-            <span>{output?.snapshot.annotations.length ?? 0} rectangles</span>
+          <button
+            className="probe-disclosure-trigger"
+            aria-expanded={disclosures.inspection}
+            aria-controls="probe-inspection"
+            onClick={() => toggleDisclosure("inspection")}
+          >
+            {disclosures.inspection ? "Hide inspectors" : "Show inspectors"}
+          </button>
+          <div id="probe-inspection" className="probe-disclosure-content" hidden={!disclosures.inspection}>
+            <section className="probe-inspector-section">
+              <div className="probe-section-title">
+                <h2>Task input</h2>
+                <span>Prepared input · read only</span>
+              </div>
+              <pre data-testid="probe-input">
+                {activeTask ? JSON.stringify(inspectedTask(activeTask), null, 2) : "No prepared task yet."}
+              </pre>
+            </section>
+            <section className="probe-inspector-section">
+              <div className="probe-section-title">
+                <h2>Result inspector</h2>
+                <span>Current edited output · {output?.snapshot.annotations.length ?? 0} rectangles</span>
+              </div>
+              <div className="probe-tabs">
+                <button aria-pressed={tab === "snapshot"} onClick={() => setTab("snapshot")}>
+                  Image coordinates
+                </button>
+                <button aria-pressed={tab === "wire"} onClick={() => setTab("wire")}>
+                  Editor wire format
+                </button>
+              </div>
+              <pre data-testid="probe-output">
+                {output
+                  ? JSON.stringify(tab === "snapshot" ? output.snapshot : output.wire, null, 2)
+                  : "No result yet."}
+              </pre>
+            </section>
           </div>
-          <div className="probe-tabs">
-            <button aria-pressed={tab === "snapshot"} onClick={() => setTab("snapshot")}>
-              Image coordinates
-            </button>
-            <button aria-pressed={tab === "wire"} onClick={() => setTab("wire")}>
-              Editor wire format
-            </button>
-          </div>
-          <pre data-testid="probe-output">
-            {output ? JSON.stringify(tab === "snapshot" ? output.snapshot : output.wire, null, 2) : "No result yet."}
-          </pre>
         </aside>
       </div>
-      <div className="probe-bottom">
+      <div className="probe-bottom probe-full-only">
         <section>
           <h2>Round-trip a snapshot or complete task</h2>
           <p>A task includes configuration and image data. A bare snapshot uses the current image and configuration.</p>
@@ -382,10 +510,10 @@ export function ProbeApp() {
           </button>
         </section>
         <section>
-          <h2>Two modules, working together</h2>
+          <h2>Shell composition</h2>
           <p>
-            Configuration and source preparation feed a validated, isolated annotation session. Image bytes are embedded
-            on import, so task exports can be reopened independently.
+            The shell keeps task preparation, the isolated annotation session, and read-only input/output inspection in
+            one workspace. Display modes and the shell theme change presentation only.
           </p>
           <p className="probe-note">
             Compatibility limits: editor gestures constrain shapes at image edges. Native hit-testing and arbitrary
