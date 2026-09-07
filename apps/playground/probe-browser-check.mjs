@@ -3,6 +3,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 
 const target = process.env.PROBE_URL || "http://localhost:4201/?component-probe=1";
 const profile = await mkdtemp(join(tmpdir(), "component-probe-chrome-"));
@@ -20,6 +21,7 @@ const chrome = spawn(
 );
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 let socket;
+let sourceServer;
 const exceptions = [];
 try {
   const endpoint = await new Promise((resolve, reject) => {
@@ -118,7 +120,7 @@ try {
     "Relabel",
   );
   await click("Export snapshot");
-  await wait("document.querySelector('textarea').value.includes('Vehicle')", "Export");
+  await wait("document.querySelector('textarea:not([id])').value.includes('Vehicle')", "Export");
   const exported = await snapshot();
   await click("Load snapshot");
   await ready();
@@ -129,7 +131,7 @@ try {
   );
   const session = await evaluate("document.querySelector('iframe').src");
   await evaluate(
-    `(() => { const el=document.querySelector('textarea'); const invalid=JSON.parse(el.value); invalid.annotations[0].width=-1; Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(el,JSON.stringify(invalid)); el.dispatchEvent(new Event('input',{bubbles:true})); })()`,
+    `(() => { const el=document.querySelector('textarea:not([id])'); const invalid=JSON.parse(el.value); invalid.annotations[0].width=-1; Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(el,JSON.stringify(invalid)); el.dispatchEvent(new Event('input',{bubbles:true})); })()`,
   );
   await click("Load snapshot");
   await wait(
@@ -195,18 +197,125 @@ try {
     drawn,
   );
   await click("Export snapshot");
-  await wait("document.querySelector('textarea').value.includes('Vehicle')", "Final export");
+  await wait("document.querySelector('textarea:not([id])').value.includes('Vehicle')", "Final export");
+  const setField = (id, value) =>
+    evaluate(`(() => {
+    const el = document.getElementById(${JSON.stringify(id)});
+    const proto = el.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${JSON.stringify(value)});
+    el.dispatchEvent(new Event('input', {bubbles:true}));
+  })()`);
+  const originalConfig = await evaluate("document.getElementById('task-config').value");
+  const beforeInvalidConfig = await evaluate("document.querySelector('iframe').src");
+  await setField("task-config", "<View>");
+  await click("Apply configuration & image");
+  await wait(
+    "document.querySelector('[role=alert]')?.textContent.includes('Malformed XML')",
+    "Malformed configuration",
+  );
+  assert.equal(await evaluate("document.querySelector('iframe').src"), beforeInvalidConfig);
+  const customConfig = originalConfig
+    .replace('name="image"', 'name="photo"')
+    .replace('toName="image"', 'toName="photo"')
+    .replace('name="label"', 'name="boxes"')
+    .replace("$image", "$asset")
+    .replace("</RectangleLabels>", '<Label value="Tree" background="#50774a" /></RectangleLabels>');
+  await setField("task-config", customConfig);
+  await click("Apply configuration & image");
+  await ready();
+  assert.equal((await snapshot()).annotations.length, 2);
+  assert.equal(
+    await evaluate("document.querySelector('iframe').contentWindow.Htx.annotationStore.selected.names.has('photo')"),
+    true,
+  );
+  await setField("task-config", customConfig.replace('value="Person"', 'value="Animal"'));
+  await click("Apply configuration & image");
+  await wait("document.querySelector('[role=alert]')?.textContent.includes('Unsupported label')", "Used-label removal");
+  await setField("task-config", customConfig);
+  await click("Move right 50 px");
+  await wait(
+    "JSON.parse(document.querySelector('[data-testid=probe-output]').textContent).annotations.find(r=>r.id==='r1').x > 149",
+    "Dirty edit",
+  );
+  const editedFrame = await evaluate("document.querySelector('iframe').src");
+  await click("Load human fixture");
+  await wait("!!document.querySelector('dialog[open]')", "Dirty-work disposition");
+  await click("Keep editing");
+  assert.equal(await evaluate("document.querySelector('iframe').src"), editedFrame);
+  await click("Load human fixture");
+  await wait("!!document.querySelector('dialog[open]')", "Dirty-work disposition again");
+  await click("Replace task");
+  await ready();
+  const upload = join(profile, "source.svg");
+  await writeFile(
+    upload,
+    '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480"><rect width="640" height="480" fill="#adc9b5"/></svg>',
+  );
+  const document = await call("DOM.getDocument");
+  const fileNode = await call("DOM.querySelector", { nodeId: document.root.nodeId, selector: "#task-image-file" });
+  await call("DOM.setFileInputFiles", { nodeId: fileNode.nodeId, files: [upload] });
+  await wait("document.querySelector('.task-fields').textContent.includes('source.svg')", "File read");
+  await click("Apply configuration & image");
+  await ready();
+  assert.equal((await snapshot()).source.width, 640);
+  assert.equal((await snapshot()).source.height, 480);
+  assert.equal((await snapshot()).annotations.length, 0);
+  await click("Export task");
+  const taskDocument = await evaluate("JSON.parse(document.querySelector('textarea:not([id])').value)");
+  assert.equal(taskDocument.format, "playground-task-v1");
+  assert(taskDocument.imageUrl.startsWith("data:image/"));
+  const portableTask = JSON.stringify(taskDocument);
+  await call("Page.navigate", { url: target });
+  await ready();
+  await evaluate(
+    `(() => {const el=document.querySelector('textarea:not([id])');Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set.call(el,${JSON.stringify(portableTask)});el.dispatchEvent(new Event('input',{bubbles:true}));})()`,
+  );
+  await click("Load snapshot");
+  await ready();
+  assert.equal((await snapshot()).source.width, 640);
+  const preservedFrame = await evaluate("document.querySelector('iframe').src");
+  await setField("task-image-url", "http://localhost:4201/not-an-image.png");
+  await evaluate(
+    "(() => {const el=document.getElementById('task-results');el.value='empty';el.dispatchEvent(new Event('change',{bubbles:true}));})()",
+  );
+  await click("Apply configuration & image");
+  await wait("!!document.querySelector('[role=alert]')", "Invalid image rejection");
+  assert.equal(await evaluate("document.querySelector('iframe').src"), preservedFrame);
+  let requested = false;
+  sourceServer = createServer((_req, res) => {
+    requested = true;
+    setTimeout(() => {
+      if (res.destroyed) return;
+      res.writeHead(200, { "Content-Type": "image/svg+xml", "Access-Control-Allow-Origin": "*" });
+      res.end(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240"><rect width="320" height="240" fill="green"/></svg>',
+      );
+    }, 1250);
+  });
+  await new Promise((resolve) => sourceServer.listen(0, "127.0.0.1", resolve));
+  await setField("task-image-url", `http://127.0.0.1:${sourceServer.address().port}/slow.svg`);
+  await click("Apply configuration & image");
+  for (let i = 0; i < 50 && !requested; i++) await delay(50);
+  assert(requested, "Delayed image request started");
+  await click("Load AI fixture");
+  await ready();
+  const winningFrame = await evaluate("document.querySelector('iframe').src");
+  await delay(1500);
+  assert.equal((await snapshot()).source.width, 1000);
+  assert.equal(await evaluate("document.querySelector('iframe').src"), winningFrame);
   await writeFile(
     process.env.PROBE_SCREENSHOT || "/tmp/component-probe.png",
     Buffer.from((await call("Page.captureScreenshot", { format: "png", captureBeyondViewport: true })).data, "base64"),
   );
   assert.deepEqual(exceptions, []);
   console.log(
-    "PASS: real editor load, move, provenance, undo/redo, relabel, export/reload, invalid-load preservation, dispose-during-load, rapid replacement, frame isolation, pointer drawing and its undo/redo; no uncaught browser exceptions.",
+    "PASS: editing/history and lifecycle regression; configurable bindings/labels, invalid XML and label-removal preservation, dirty-work cancel/replace, image upload/dimensions, portable full-task reload, failed-image preservation, and stale image request cancellation; no uncaught browser exceptions.",
   );
 } finally {
   socket?.close();
+  sourceServer?.closeAllConnections();
+  sourceServer?.close();
   chrome.kill();
   await new Promise((resolve) => (chrome.exitCode !== null ? resolve() : chrome.once("exit", resolve)));
-  await rm(profile, { recursive: true, force: true });
+  await rm(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
 }

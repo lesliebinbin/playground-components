@@ -1,15 +1,16 @@
 import { useEffect, useRef } from "react";
 import { onSnapshot } from "mobx-state-tree";
-import { CHANNEL, SOURCE, fromWire, toWire, validateSnapshot } from "./model";
-import sourceUrl from "./courtyard.svg?url";
-
-const config = `<View><Image name="image" value="$image" zoom="true"/><RectangleLabels name="label" toName="image" canRotate="false"><Label value="Person" background="#16877b"/><Label value="Vehicle" background="#b86c45"/></RectangleLabels></View>`;
+import { CHANNEL, DEFAULT_BINDING, fromWire, toWire } from "./model";
+import { parseConfiguration } from "../preparation/configuration";
+import { validateTask, type TaskDocument } from "../preparation/task";
 
 export function ProbeFrame() {
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const generation = new URLSearchParams(location.search).get("generation");
     let instance: any;
+    let task: TaskDocument;
+    let binding = DEFAULT_BINDING;
     let disposed = false;
     let started = false;
     let ready = false;
@@ -24,7 +25,7 @@ export function ProbeFrame() {
       try {
         const wire = annotation.serializeAnnotation();
         send(type, {
-          snapshot: fromWire(wire),
+          snapshot: fromWire(wire, task.snapshot.source, binding),
           wire,
           sequence: ++sequence,
           canUndo: annotation.history.canUndo,
@@ -38,15 +39,17 @@ export function ProbeFrame() {
       if (started) return;
       started = true;
       try {
-        const snapshot = validateSnapshot(input);
+        task = validateTask(input);
+        const snapshot = task.snapshot;
+        binding = parseConfiguration(task.config);
         const { LabelStudio } = await import("@humansignal/editor");
         if (disposed) return;
         instance = new LabelStudio(root.current, {
-          config,
+          config: task.config,
           task: {
             id: 1,
-            data: { image: sourceUrl },
-            annotations: [{ id: 1, result: toWire(snapshot) }],
+            data: { [binding.dataKey]: task.imageUrl },
+            annotations: [{ id: 1, result: toWire(snapshot, binding) }],
             predictions: [],
           },
           interfaces: ["controls", "side-column", "edit-history"],
@@ -58,9 +61,9 @@ export function ProbeFrame() {
           if (disposed) return;
           const store = instance.store;
           const annotation = store?.annotationStore?.selected;
-          const image = annotation?.names?.get("image");
+          const image = annotation?.names?.get(binding.imageName);
           if (annotation && image?.currentImageEntity?.imageLoaded && root.current?.querySelector("canvas")) {
-            if (image.naturalWidth !== SOURCE.width || image.naturalHeight !== SOURCE.height) {
+            if (image.naturalWidth !== snapshot.source.width || image.naturalHeight !== snapshot.source.height) {
               send("ERROR", { message: "Decoded image dimensions do not match the task." });
               return;
             }
@@ -85,9 +88,9 @@ export function ProbeFrame() {
         event.data.generation !== generation
       )
         return;
-      const { type, snapshot } = event.data;
+      const { type, task: input } = event.data;
       if (type === "INIT") {
-        void initialize(snapshot);
+        void initialize(input);
         return;
       }
       if (!ready) return;
@@ -101,18 +104,22 @@ export function ProbeFrame() {
         } else if (type === "MOVE" || type === "RELABEL") {
           const area = Array.from(annotation.areas.values()).find((r: any) => r.cleanId === "r1") as any;
           if (!area) throw new Error("The fixture rectangle r1 has been deleted. Load a fixture to try this action.");
-          if (type === "MOVE" && area.x + area.width + 5 > 100) throw new Error("Move would exceed image bounds.");
+          const delta = (50 / task.snapshot.source.width) * 100;
+          if (type === "MOVE" && area.x + area.width + delta > 100) throw new Error("Move would exceed image bounds.");
           annotation.history.freeze("probe-command");
           try {
             if (type === "MOVE")
               area.setPosition(
-                area.parent.internalToCanvasX(area.x + 5),
+                area.parent.internalToCanvasX(area.x + delta),
                 area.parent.internalToCanvasY(area.y),
                 area.parent.internalToCanvasX(area.width),
                 area.parent.internalToCanvasY(area.height),
                 0,
               );
-            else area.results[0].setValue([area.labels[0] === "Person" ? "Vehicle" : "Person"]);
+            else
+              area.results[0].setValue([
+                binding.labels[(binding.labels.indexOf(area.labels[0]) + 1) % binding.labels.length],
+              ]);
             area.notifyDrawingFinished();
           } finally {
             annotation.history.unfreeze("probe-command");

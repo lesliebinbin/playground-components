@@ -246,3 +246,67 @@
     font-size: 28px;
   }
 }
+.task-preparation {
+  background: #fff;
+  border: 1px solid #d7dfd8;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.task-fields {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 28px;
+  padding: 18px;
+}
+.task-fields label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #36594b;
+  margin-bottom: 8px;
+}
+.task-fields textarea {
+  height: 230px;
+}
+.task-fields input:not([type="file"]),
+.task-fields select {
+  width: 100%;
+  border: 1px solid #cbd6cf;
+  border-radius: 6px;
+  background: white;
+  padding: 10px;
+  font: 12px system-ui;
+  color: #36594b;
+}
+.task-fields input[type="file"] {
+  max-width: 100%;
+  font-size: 12px;
+}
+.task-fields p {
+  font-size: 12px;
+}
+.task-fields .task-file {
+  margin-top: 14px;
+}
+.task-replacement {
+  border: 1px solid #aac3b1;
+  border-radius: 12px;
+  padding: 28px;
+  max-width: 560px;
+  color: #25483c;
+}
+.task-replacement::backdrop {
+  background: #12291d77;
+}
+.task-replacement button {
+  margin-right: 8px;
+}
+.task-replacement h2 {
+  margin-bottom: 12px;
+}
+@media (max-width: 1000px) {
+  .task-fields {
+    grid-template-columns: 1fr;
+  }
+}

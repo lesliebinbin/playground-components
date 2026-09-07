@@ -1,5 +1,10 @@
 # Annotation component compatibility probe
 
+Historical first-component guide. The repository is now `playground-components`;
+the [current guide](COMPONENTS.md) covers configurable labels, source images, and
+complete task export/import. Fixed-source restrictions below describe the original
+probe, not the expanded module.
+
 A runnable Playground surface for testing an existing editor as an isolated
 annotation component. Open **`/?component-probe=1`**. The default `/` still opens
 the original Playground.
