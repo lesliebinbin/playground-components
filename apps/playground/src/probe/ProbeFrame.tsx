@@ -14,11 +14,24 @@ export function ProbeFrame() {
     let disposed = false;
     let started = false;
     let ready = false;
+    let pointerPressed = false;
     let timer: ReturnType<typeof setTimeout>;
     let disposeSnapshot: (() => void) | undefined;
     let sequence = 0;
+
+    const onPointerDown = () => {
+      pointerPressed = true;
+    };
+    const onPointerUp = () => {
+      pointerPressed = false;
+    };
+    window.addEventListener("pointerdown", onPointerDown, true);
+    window.addEventListener("pointerup", onPointerUp, true);
+    window.addEventListener("pointercancel", onPointerUp, true);
+
     const send = (type: string, payload: object = {}) =>
       parent.postMessage({ channel: CHANNEL, generation, type, ...payload }, location.origin);
+
     const publish = (type = "CHANGE") => {
       const annotation = instance?.store?.annotationStore?.selected;
       if (!ready || !annotation || disposed) return;
@@ -35,6 +48,31 @@ export function ProbeFrame() {
         send("ERROR", { message: String(error) });
       }
     };
+
+    const isGestureActive = (annotation: any): boolean => {
+      if (pointerPressed) return true;
+      if (annotation.isDrawing || annotation.dragMode) return true;
+
+      const image = annotation?.names?.get(binding.imageName);
+      if (image?.drawingRegion || image?.isDrawing) return true;
+
+      const toolsManager = image?.toolsManager;
+      if (toolsManager) {
+        const drawingTool = toolsManager.findDrawingTool?.();
+        if (drawingTool && (drawingTool.isDrawing || drawingTool.currentArea)) return true;
+      }
+
+      if (annotation.areas) {
+        for (const area of annotation.areas.values()) {
+          if (area.isDrawing) return true;
+        }
+      }
+
+      if (annotation.history?.isFrozen) return true;
+
+      return false;
+    };
+
     const initialize = async (input: unknown) => {
       if (started) return;
       started = true;
@@ -80,6 +118,7 @@ export function ProbeFrame() {
         send("ERROR", { message: String(error) });
       }
     };
+
     const receive = (event: MessageEvent) => {
       if (
         event.origin !== location.origin ||
@@ -88,14 +127,51 @@ export function ProbeFrame() {
         event.data.generation !== generation
       )
         return;
-      const { type, task: input } = event.data;
+      const { type, requestId, task: input } = event.data;
       if (type === "INIT") {
         void initialize(input);
         return;
       }
-      if (!ready) return;
+      if (!ready) {
+        if (type === "CAPTURE_REQUEST") {
+          send("CAPTURE_RESPONSE", {
+            requestId,
+            success: false,
+            error: "Editor is not ready yet",
+            code: "NOT_READY",
+          });
+        }
+        return;
+      }
       const annotation = instance.store.annotationStore.selected;
       try {
+        if (type === "CAPTURE_REQUEST") {
+          if (isGestureActive(annotation)) {
+            send("CAPTURE_RESPONSE", {
+              requestId,
+              success: false,
+              error:
+                "An annotation gesture is currently in progress. Complete or release it before saving or accepting.",
+              code: "GESTURE_ACTIVE",
+            });
+            return;
+          }
+          const wire = annotation.serializeAnnotation();
+          const snapshot = fromWire(wire, task.snapshot.source, binding);
+          const capturedTask: TaskDocument = {
+            format: "playground-task-v1",
+            config: task.config,
+            imageUrl: task.imageUrl,
+            snapshot,
+          };
+          send("CAPTURE_RESPONSE", {
+            requestId,
+            success: true,
+            task: capturedTask,
+          });
+          return;
+        }
+
         if (type === "UNDO") annotation.undo();
         else if (type === "REDO") annotation.redo();
         else if (type === "EXPORT") {
@@ -127,15 +203,28 @@ export function ProbeFrame() {
         } else return;
         publish();
       } catch (error) {
-        send("ERROR", { message: String(error) });
+        if (type === "CAPTURE_REQUEST") {
+          send("CAPTURE_RESPONSE", {
+            requestId,
+            success: false,
+            error: String(error),
+            code: "SERIALIZATION_ERROR",
+          });
+        } else {
+          send("ERROR", { message: String(error) });
+        }
       }
     };
+
     window.addEventListener("message", receive);
     send("HELLO");
     return () => {
       disposed = true;
       clearTimeout(timer);
       disposeSnapshot?.();
+      window.removeEventListener("pointerdown", onPointerDown, true);
+      window.removeEventListener("pointerup", onPointerUp, true);
+      window.removeEventListener("pointercancel", onPointerUp, true);
       window.removeEventListener("message", receive);
       instance?.destroy?.();
     };

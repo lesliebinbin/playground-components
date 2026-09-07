@@ -470,3 +470,100 @@
     min-height: 0;
   }
 }
+
+/* Host lifecycle controls */
+.probe-host-controls {
+  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid #d7dfd8;
+  border-radius: 10px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.probe-host-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.probe-host-row label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #36594b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.probe-host-row select {
+  border: 1px solid #cbd6cf;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #25483c;
+  background: #fff;
+}
+.probe-dirty-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+.probe-dirty-badge.never-saved {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+.probe-dirty-badge.saved-current {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.probe-dirty-badge.unsaved-changes {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+.probe-rev-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.probe-rev-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #e6eae5;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.probe-rev-item.selected {
+  border-color: #286c5a;
+  background: #e6ede7;
+}
+
+.probe-theme-dark .probe-host-controls {
+  background: #22312c;
+  border-color: #597264;
+}
+.probe-theme-dark .probe-host-row label {
+  color: #b5c7bc;
+}
+.probe-theme-dark .probe-host-row select {
+  background: #17231f;
+  border-color: #597264;
+  color: #e4eee8;
+}
+.probe-theme-dark .probe-rev-item {
+  border-color: #385045;
+}
+.probe-theme-dark .probe-rev-item.selected {
+  border-color: #82a895;
+  background: #31483d;
+}

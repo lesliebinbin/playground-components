@@ -353,6 +353,7 @@ try {
   assert.equal(await evaluate("!!document.querySelector('iframe').contentWindow.Htx"), true);
   const canvas = await evaluate(`(() => {
     const frame = document.querySelector('iframe');
+    frame.scrollIntoView({ block: 'center' });
     const doc = frame.contentDocument;
     const label = [...doc.querySelectorAll('span')].find(el => el.textContent.trim() === 'Vehicle');
     if (!label) throw new Error('Vehicle label not found');
