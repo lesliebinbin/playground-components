@@ -136,7 +136,7 @@ deserializeRelation for every relation
 
 - Annotation History should be updated with correct annotation when we select it from View All; why not to do the same on usual annotation select? and if we do why do we need special case here?
 
-- **Experiment**: use dev addons from outside via additional entry point for webpack. And how to distinguish this from e2e runs? Additional param?
+- **Experiment**: use development addons from outside through an additional Vite entry point. Determine how to distinguish this from e2e runs.
 
 - `description` option should be renamed to `instructions`
 

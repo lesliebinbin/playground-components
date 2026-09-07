@@ -3,12 +3,6 @@ import { Checkbox, Spinner } from "@humansignal/ui";
 import { useAuth } from "@humansignal/core/providers/AuthProvider";
 import { ff, useAPI } from "@humansignal/core";
 
-/**
- * FIXME: This is legacy imports. We're not supposed to use such statements
- * each one of these eventually has to be migrated to core/ui
- */
-import { useConfig } from "apps/labelstudio/src/providers/ConfigProvider";
-
 type NotificationCheckboxProps = {
   id: string;
   label: string;
@@ -32,10 +26,10 @@ const NotificationCheckbox = ({ id, label, checked, onToggle }: NotificationChec
 export const EmailPreferences = () => {
   const isEnterpriseEmailNotificationsEnabled =
     ff.isActive(ff.FF_ENTERPRISE_EMAIL_NOTIFICATIONS) && window.APP_SETTINGS?.billing?.enterprise;
-  const config = useConfig();
+  const config = window.APP_SETTINGS ?? {};
   const { user, refetch } = useAuth();
   const api = useAPI();
-  const [isAllowNewsLetter, setIsAllowNewsLetter] = useState(config.user.allow_newsletters);
+  const [isAllowNewsLetter, setIsAllowNewsLetter] = useState(config.user?.allow_newsletters ?? false);
   const [emailNotificationSettings, setEmailNotificationSettings] = useState(
     user?.lse_fields?.email_notification_settings ?? {},
   );

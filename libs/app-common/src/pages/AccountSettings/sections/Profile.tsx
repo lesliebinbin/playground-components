@@ -6,9 +6,9 @@ import { ProfileDirtyProvider, useDiscardProfileDrafts, useProfileFormsDirty } f
 /**
  * FIXME: This is a legacy import. We're not supposed to reach into the app from app-common;
  * `UnsavedChanges` (and its `LeaveBlocker`/`getUserConfirmation` wiring) currently lives in the app
- * layer and resolves in both LSO and LSE builds via the `apps/labelstudio` path alias.
+ * layer and resolves in both host applications through app-common.
  */
-import { UnsavedChanges } from "apps/labelstudio/src/pages/CreateProject/Config/UnsavedChanges";
+import { UnsavedChanges } from "../../../components/UnsavedChanges";
 
 /**
  * Single page-level guard for the Profile section. The page stacks two independent forms

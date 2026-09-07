@@ -184,19 +184,16 @@ flowchart TD
 
 ## Feature flags
 
-- The playground uses the same feature flags as the main Label Studio application, sourced from `label_studio/feature_flags.json` in the backend repo.
+- The playground uses the committed `src/config/feature-flags.json` snapshot.
 - `src/utils/embedFeatureFlags.ts` imports this JSON and mirrors it into `window.FEATURE_FLAGS` at startup so that `@humansignal/editor` and UI code can rely on the usual feature flag environment.
-- Feature flags in `label_studio/feature_flags.json` are updated via a scheduled GitHub Action or manually by running the `Update Feature Flags` workflow in the `label-studio` repository CI.
+- Sync the snapshot manually from the full Label Studio backend's `label_studio/feature_flags.json` when upstream feature flags change. The standalone repository intentionally does not read parent directories or run the backend update workflow.
 
 ## Deployment and hosting
 
 - **Build tooling**:
-  - The playground is an Nx application defined by `project.json` with a `build` target that uses `@nx/webpack:webpack`.
-  - Production builds output to `dist/apps/playground/playground-assets` with `baseHref` set to `/playground-assets/` so that assets can be served from a stable subpath.
-  - The `playground:build` script in `web/package.json` sets `MODE=standalone-playground`, runs the production build, and then moves `dist/apps/playground/playground-assets/index.html` to `dist/apps/playground/index.html` for convenience.
-- **Webpack public path**:
-  - `web/webpack.config.js` reads `MODE` and, when it equals `standalone-playground`, configures `output.publicPath` to `/playground-assets/`.
-  - This ensures that all lazy loaded chunks and static assets resolve correctly when the playground is served under that prefix.
+  - Vite builds the playground from `vite.config.playground.ts`.
+  - Production builds output to `dist/apps/playground/playground-assets` with `/playground-assets/` as the asset base so that assets can be served from a stable subpath.
+  - `npm run playground:build` moves the generated HTML to `dist/apps/playground/index.html` for static hosting convenience.
 - **Runtime hosting**:
   - The compiled `dist/apps/playground` directory is deployed as a static site, currently via a Netlify project referenced in internal docs as `label-studio-playground`.
   - New deployments can be triggered either by merging changes to the playground sources into the main repo or by manually triggering a deploy in the Netlify admin for the playground project.
@@ -206,8 +203,8 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  A1[Developer runs bun run playground:build] --> B1[Nx playground build production target]
-  B1 --> C1[Webpack bundles app<br/>outputPath dist apps playground playground assets]
+  A1[Developer runs npm run playground:build] --> B1[Vite production build]
+  B1 --> C1[Vite bundles app<br/>outputPath dist apps playground playground assets]
   C1 --> D1[Move built index html<br/>to dist apps playground index html]
   D1 --> E1[Static hosting platform<br/>serves dist apps playground]
   E1 --> F1[Docs site iframe<br/>loads playground with config query]
@@ -227,11 +224,8 @@ web/apps/playground/
 │   ├── utils/          # Utility functions
 │   ├── index.html      # Entry HTML file
 │   └── main.tsx        # Entry point
-├── .babelrc           # Babel configuration
-├── project.json       # Nx project configuration
 ├── tsconfig.json      # TypeScript configuration
 ├── tsconfig.app.json  # App-specific TypeScript configuration
-└── tsconfig.spec.json # Test-specific TypeScript configuration
 ```
 
 ## Summary

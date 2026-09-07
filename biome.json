@@ -10,7 +10,6 @@
       "!**/tsconfig*",
       "!**/libs/editor/examples/**/*.json",
       "!**/libs/editor/src/examples/**/annotations/1.json",
-      "!**/apps/labelstudio-e2e",
       "!**/libs/datamanager/public/index.html",
       "!**/antd-no-reset.css"
     ],

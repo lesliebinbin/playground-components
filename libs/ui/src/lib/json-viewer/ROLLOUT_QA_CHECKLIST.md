@@ -23,8 +23,8 @@ All green on branch `fb-fit-2006` (commit `2f2f143e6`).
 
 | Suite | Command | Result |
 |---|---|---|
-| JsonViewer + CodeEditor unit tests | `cd services/lso/web && bun test libs/ui/src/lib/json-viewer/ libs/ui/src/lib/code-editor/` | **24 pass** |
-| LSE page tests (CodeEditor mocks) | `cd services/lse/web && bun test PlaygroundPage.test.tsx CreateInterfaceModal.test.tsx OverviewPage.test.tsx ConfiguratorPlugins.test.tsx` | **58 pass** |
+| JsonViewer + CodeEditor unit tests | Historical test-runner execution; unsupported in this npm-only repository | **24 pass** |
+| LSE page tests (CodeEditor mocks) | Historical backend-repository execution; not part of this standalone repository | **58 pass** |
 
 Flag coverage in unit tests:
 
@@ -37,7 +37,7 @@ Flag coverage in unit tests:
 
 ### jsdom mount benchmark (`benchmark-results.json`)
 
-Task Source–shaped fixtures, depth-2 expand, Bun 1.3.11. Thresholds from spec: **TTI &lt;500ms @100KB**, **&lt;2s @1MB**.
+Task Source–shaped fixtures, depth-2 expand, from the historical measurement. Thresholds from spec: **TTI &lt;500ms @100KB**, **&lt;2s @1MB**.
 
 | Fixture | Library | Median mount | DOM nodes | Threshold |
 |---|---|---|---|---|

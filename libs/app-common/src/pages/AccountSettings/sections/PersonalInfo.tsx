@@ -13,7 +13,7 @@ import { useAtomValue } from "jotai";
  * FIXME: This is legacy imports. We're not supposed to use such statements
  * each one of these eventually has to be migrated to core or ui
  */
-import { Input } from "apps/labelstudio/src/components/Form/Elements";
+import { Input } from "../../../components/Form/Elements";
 
 const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
   google: "Google",

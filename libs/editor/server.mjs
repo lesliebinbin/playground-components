@@ -1,208 +1,136 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
- * Bun-native static file server for the editor production build (Cypress / CI).
- * Serves files with Bun.file(); implements RFC 7233 byte ranges (206 + Content-Range) and
- * Accept-Ranges so HTML audio/video can report finite duration and seek (required for Chromium).
- *
- * Default root: dist/libs/editor (relative to services/lso/web). Override with STATIC_ROOT.
- *
- * @see https://bun.com/docs/guides/http/server
+ * Static file server for the editor production build.
+ * Supports RFC 7233 byte ranges so media can report duration and seek.
  */
-import { existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, statSync } from "node:fs";
+import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 const DEFAULT_ROOT = path.resolve(__dirname, "../../dist/libs/editor");
 const STATIC_ROOT = path.resolve(process.env.STATIC_ROOT || DEFAULT_ROOT);
 const PORT = Number(process.env.PORT) || 3000;
 
+const MIME_TYPES = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json",
+  ".mp3": "audio/mpeg",
+  ".wav": "audio/wav",
+  ".ogg": "audio/ogg",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+  ".ico": "image/x-icon",
+  ".woff2": "font/woff2",
+  ".woff": "font/woff",
+};
+
 function isInsideRoot(root, candidate) {
-  const r = path.resolve(root);
-  const c = path.resolve(candidate);
-  if (c === r) return true;
-  const prefix = r.endsWith(path.sep) ? r : `${r}${path.sep}`;
-  return c.startsWith(prefix);
+  const resolvedRoot = path.resolve(root);
+  const resolvedCandidate = path.resolve(candidate);
+  return resolvedCandidate === resolvedRoot || resolvedCandidate.startsWith(`${resolvedRoot}${path.sep}`);
 }
 
-function decodePathname(pathname) {
+function resolveFilePath(pathname) {
+  let decoded;
   try {
-    return decodeURIComponent(pathname);
+    decoded = decodeURIComponent(pathname);
   } catch {
     return null;
   }
-}
 
-/**
- * Map request path to an absolute file path under STATIC_ROOT.
- * Rejects path traversal. "/" → index.html at root.
- */
-function resolveFilePath(pathname) {
-  const decoded = decodePathname(pathname);
-  if (decoded === null) return null;
+  const segments = decoded.split("/").filter(Boolean);
+  if (segments.some((segment) => segment === "." || segment === "..")) return null;
 
-  let rel = decoded;
-  if (rel.startsWith("/")) rel = rel.slice(1);
-  const segments = rel.split("/").filter((s) => s.length > 0);
-  for (const seg of segments) {
-    if (seg === ".." || seg === ".") return null;
+  let candidate = path.join(STATIC_ROOT, ...(segments.length ? segments : ["index.html"]));
+  if (!isInsideRoot(STATIC_ROOT, candidate) || !existsSync(candidate)) return null;
+
+  if (statSync(candidate).isDirectory()) {
+    candidate = path.join(candidate, "index.html");
   }
 
-  if (segments.length === 0) {
-    return path.join(STATIC_ROOT, "index.html");
-  }
-
-  const candidate = path.join(STATIC_ROOT, ...segments);
-  if (!isInsideRoot(STATIC_ROOT, candidate)) return null;
-
-  if (!existsSync(candidate)) return null;
-
-  const st = statSync(candidate);
-  if (st.isDirectory()) {
-    const index = path.join(candidate, "index.html");
-    if (existsSync(index)) return index;
-    return null;
-  }
-
-  return candidate;
+  return existsSync(candidate) ? candidate : null;
 }
 
-function notFound() {
-  return new Response("Not Found", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
-}
-
-/**
- * MIME fallback when Bun.file().type is empty (extension-based).
- * @param {string} filePath
- */
-function contentTypeForPath(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  const map = {
-    ".html": "text/html; charset=utf-8",
-    ".js": "text/javascript; charset=utf-8",
-    ".mjs": "text/javascript; charset=utf-8",
-    ".css": "text/css; charset=utf-8",
-    ".json": "application/json",
-    ".mp3": "audio/mpeg",
-    ".wav": "audio/wav",
-    ".ogg": "audio/ogg",
-    ".mp4": "video/mp4",
-    ".webm": "video/webm",
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".svg": "image/svg+xml",
-    ".ico": "image/x-icon",
-    ".woff2": "font/woff2",
-    ".woff": "font/woff",
-  };
-  return map[ext] ?? "application/octet-stream";
-}
-
-/**
- * Parse a single `bytes=` range (RFC 7233). Returns one inclusive { start, end } or "unsatisfiable".
- * @param {string} rangeHeader
- * @param {number} size
- * @returns {{ start: number, end: number } | "unsatisfiable" | null}
- */
 function parseSingleByteRange(rangeHeader, size) {
-  if (!rangeHeader || !rangeHeader.startsWith("bytes=")) return null;
-  const spec = rangeHeader.slice("bytes=".length).trim();
-  const first = spec.split(",")[0].trim();
+  if (!rangeHeader?.startsWith("bytes=")) return null;
+  const [first] = rangeHeader.slice("bytes=".length).trim().split(",");
   const dash = first.indexOf("-");
   if (dash === -1) return null;
 
-  const startStr = first.slice(0, dash);
-  const endStr = first.slice(dash + 1);
-
+  const startText = first.slice(0, dash).trim();
+  const endText = first.slice(dash + 1).trim();
   let start;
   let end;
 
-  if (startStr === "") {
-    const suffixLen = Number.parseInt(endStr, 10);
-    if (!Number.isFinite(suffixLen) || suffixLen <= 0) return "unsatisfiable";
-    start = Math.max(0, size - suffixLen);
+  if (!startText) {
+    const suffixLength = Number.parseInt(endText, 10);
+    if (!Number.isFinite(suffixLength) || suffixLength <= 0) return "unsatisfiable";
+    start = Math.max(0, size - suffixLength);
     end = size - 1;
   } else {
-    start = Number.parseInt(startStr, 10);
-    if (!Number.isFinite(start)) return null;
-    if (start >= size) return "unsatisfiable";
-    if (endStr === "") {
-      end = size - 1;
-    } else {
-      end = Number.parseInt(endStr, 10);
-      if (!Number.isFinite(end)) return null;
-      end = Math.min(end, size - 1);
-    }
-    if (start > end) return "unsatisfiable";
+    start = Number.parseInt(startText, 10);
+    if (!Number.isFinite(start) || start >= size) return "unsatisfiable";
+    end = endText ? Math.min(Number.parseInt(endText, 10), size - 1) : size - 1;
+    if (!Number.isFinite(end) || start > end) return "unsatisfiable";
   }
 
   return { start, end };
 }
 
-/**
- * @param {import("bun").BunFile} file
- * @param {string} filePath
- * @param {Request} req
- */
-function serveFile(file, filePath, req) {
-  const size = file.size;
-  const type = file.type || contentTypeForPath(filePath);
-  const baseHeaders = {
+const server = createServer((req, res) => {
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.writeHead(405, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Method Not Allowed");
+    return;
+  }
+
+  const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
+  const filePath = resolveFilePath(url.pathname);
+  if (!filePath) {
+    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+    res.end("Not Found");
+    return;
+  }
+
+  const size = statSync(filePath).size;
+  const type = MIME_TYPES[path.extname(filePath).toLowerCase()] ?? "application/octet-stream";
+  const range = parseSingleByteRange(req.headers.range, size);
+
+  if (range === "unsatisfiable") {
+    res.writeHead(416, { "Content-Range": `bytes */${size}` });
+    res.end();
+    return;
+  }
+
+  const headers = {
     "Content-Type": type,
-    "Content-Length": String(size),
     "Accept-Ranges": "bytes",
   };
-
-  if (req.method === "HEAD") {
-    return new Response(null, { headers: baseHeaders });
+  if (range) {
+    const { start, end } = range;
+    res.writeHead(206, {
+      ...headers,
+      "Content-Length": end - start + 1,
+      "Content-Range": `bytes ${start}-${end}/${size}`,
+    });
+    if (req.method === "GET") createReadStream(filePath, { start, end }).pipe(res);
+  } else {
+    res.writeHead(200, { ...headers, "Content-Length": size });
+    if (req.method === "GET") createReadStream(filePath).pipe(res);
   }
 
-  const rangeHeader = req.headers.get("range");
-  if (rangeHeader && req.method === "GET") {
-    const parsed = parseSingleByteRange(rangeHeader, size);
-    if (parsed === "unsatisfiable") {
-      return new Response(null, {
-        status: 416,
-        headers: { "Content-Range": `bytes */${size}` },
-      });
-    }
-    if (parsed) {
-      const { start, end } = parsed;
-      const chunk = file.slice(start, end + 1);
-      return new Response(chunk, {
-        status: 206,
-        headers: {
-          "Content-Type": type,
-          "Content-Length": String(end - start + 1),
-          "Content-Range": `bytes ${start}-${end}/${size}`,
-          "Accept-Ranges": "bytes",
-        },
-      });
-    }
-  }
-
-  return new Response(file, { headers: baseHeaders });
-}
-
-const server = Bun.serve({
-  hostname: "0.0.0.0",
-  port: PORT,
-  fetch(req) {
-    if (req.method !== "GET" && req.method !== "HEAD") {
-      return new Response("Method Not Allowed", { status: 405 });
-    }
-
-    const url = new URL(req.url);
-    const filePath = resolveFilePath(url.pathname);
-    if (!filePath) {
-      return notFound();
-    }
-
-    const file = Bun.file(filePath);
-    return serveFile(file, filePath, req);
-  },
+  if (req.method === "HEAD") res.end();
 });
 
-console.log(`Serving ${STATIC_ROOT} at ${server.url}`);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Serving ${STATIC_ROOT} at http://0.0.0.0:${PORT}`);
+});

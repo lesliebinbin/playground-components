@@ -1,8 +1,8 @@
 /**
  * Generates Task Source Viewer-shaped JSON fixtures at ~10KB, ~100KB, and ~1MB.
  *
- * Usage (from services/lso/web):
- *   bun libs/ui/scripts/generate-json-viewer-fixtures.mjs
+ * Usage (from this repository's root):
+ *   node libs/ui/scripts/generate-json-viewer-fixtures.mjs
  */
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";

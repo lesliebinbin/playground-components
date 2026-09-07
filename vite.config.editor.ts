@@ -14,7 +14,7 @@ import postcssImport from "postcss-import";
 import { jsxJsPlugin } from "./vite-lib-jsx-plugins";
 
 const require = createRequire(import.meta.url);
-loadEnv("", path.resolve(__dirname, "../../../"), "");
+loadEnv("", __dirname, "");
 
 const { postcssPrefixLsfClasses, postcssPreProcessGlobalBlocks } = require("./postcss-prefix-lsf.cjs") as {
   postcssPrefixLsfClasses: () => AcceptedPlugin;
@@ -65,7 +65,7 @@ export default defineConfig(async ({ mode }): Promise<UserConfig> => {
     root: path.resolve(__dirname, "libs/editor"),
     base: "/",
     publicDir: "public",
-    envDir: path.resolve(__dirname, "../../../"),
+    envDir: __dirname,
     define: {
       global: "globalThis",
       "process.env.CSS_PREFIX": JSON.stringify(CSS_PREFIX),

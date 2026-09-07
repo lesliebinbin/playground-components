@@ -1,5 +1,5 @@
-// Get the feature flags from the root feature_flags.json file
-import rawFeatureFlags from "../../../../../label_studio/feature_flags.json";
+// This snapshot keeps the standalone Playground build independent of the backend repository.
+import rawFeatureFlags from "../config/feature-flags.json";
 
 // Embed the feature flags in the playground app
 const embedFeatureFlags = () => {

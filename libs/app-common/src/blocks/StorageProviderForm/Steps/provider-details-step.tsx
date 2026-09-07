@@ -1,6 +1,6 @@
 import { getProviderConfig } from "../providers";
 import { ProviderForm } from "../components/provider-form";
-import Input from "apps/labelstudio/src/components/Form/Elements/Input/Input";
+import Input from "../../../components/Form/Elements/Input/Input";
 import { Toggle } from "@humansignal/ui";
 
 interface ProviderDetailsStepProps {

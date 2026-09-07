@@ -5,7 +5,7 @@ import { Button, Label, Typography } from "@humansignal/ui";
  * FIXME: This is legacy imports. We're not supposed to use such statements
  * each one of these eventually has to be migrated to core/ui
  */
-import { Input, TextArea } from "apps/labelstudio/src/components/Form";
+import { Input, TextArea } from "../../../components/Form";
 import { atom, useAtomValue } from "jotai";
 import { atomWithMutation, atomWithQuery } from "jotai-tanstack-query";
 import styles from "./PersonalAccessToken.module.css";

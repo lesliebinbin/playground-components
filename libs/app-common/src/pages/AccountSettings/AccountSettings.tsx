@@ -14,7 +14,7 @@ import { useAuth } from "@humansignal/core/providers/AuthProvider";
  * FIXME: This is legacy imports. We're not supposed to use such statements
  * each one of these eventually has to be migrated to core/ui
  */
-import { SidebarMenu } from "apps/labelstudio/src/components/SidebarMenu/SidebarMenu";
+import { SidebarMenu } from "../../components/SidebarMenu/SidebarMenu";
 
 const AccountSettingsSection = () => {
   const { permissions } = useAuth();

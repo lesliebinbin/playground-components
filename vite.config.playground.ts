@@ -14,7 +14,7 @@ import postcssImport from "postcss-import";
 import { jsxJsPlugin, optimizeDepsAutomaticJsxPlugin } from "./vite-lib-jsx-plugins";
 
 const require = createRequire(import.meta.url);
-loadEnv("", path.resolve(__dirname, "../../../"), "");
+loadEnv("", __dirname, "");
 
 const { postcssPrefixLsfClasses, postcssPreProcessGlobalBlocks } = require("./postcss-prefix-lsf.cjs") as {
   postcssPrefixLsfClasses: () => AcceptedPlugin;
@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
     root: path.resolve(__dirname, "apps/playground/src"),
     base: isPlaygroundProd || mode === "production" ? "/playground-assets/" : "/",
     publicDir: false,
-    envDir: path.resolve(__dirname, "../../../"),
+    envDir: __dirname,
     define: {
       global: "globalThis",
       "process.env.CSS_PREFIX": JSON.stringify(CSS_PREFIX),

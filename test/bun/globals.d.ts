@@ -1,10 +1,8 @@
-/// <reference types="bun-types/test-globals" />
-
 /**
- * Supplementary globals for the Bun test preload.
+ * Supplementary globals for the legacy Bun test preload.
  *
- * bun-types/test-globals covers describe, it, expect, etc.
- * This file adds:
+ * The npm workflow intentionally does not load this file. It is retained with
+ * the historical test sources pending a runner migration. It adds:
  *  - `mock` and `spyOn` (exposed as globals by preload.ts)
  *  - Timer helpers: useFakeTimers, useRealTimers, advanceTimersByTime, etc.
  *  - `mockFF` (feature-flag helper from preload.ts)

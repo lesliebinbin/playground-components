@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@huma
 import { confirm } from "@humansignal/ui/lib/modal";
 import { IconWarning } from "@humansignal/icons";
 import { useLocation } from "react-router-dom";
-import { LeaveBlocker, type LeaveBlockerCallbacks } from "apps/labelstudio/src/components/LeaveBlocker/LeaveBlocker";
+import { LeaveBlocker, type LeaveBlockerCallbacks } from "../../../components/LeaveBlocker/LeaveBlocker";
 import {
   Card as ShadCard,
   CardContent as ShadCardContent,

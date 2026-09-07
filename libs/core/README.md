@@ -1,7 +1,5 @@
 # core
 
-This library was generated with [Nx](https://nx.dev).
+Shared frontend API, state, provider, and utility code for Label Studio Web surfaces.
 
-## Running unit tests
-
-Run `bun run test:unit:core` to execute the unit tests via [Bun](https://bun.sh/docs/test/writing).
+Historical unit-test source remains in the repository, but it uses Bun test APIs and has no npm test command.

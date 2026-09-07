@@ -21,13 +21,13 @@ Implementation risk is **low–medium**: most `JsonViewer` toolbar/state logic s
 
 | Parameter | Value |
 |---|---|
-| Runtime | Bun 1.3.11, jsdom 22 |
+| Runtime | Historical jsdom measurement |
 | Fixtures | Task Source–shaped nested JSON (~10 KB / ~100 KB / ~1.1 MB on disk) |
 | Expansion | `collapse` / `initialExpandDepth = 2` (root + one level) |
 | Viewport | 500 px height |
 | Runs | 1 warmup + 3 measured per library/fixture |
-| Script | `libs/ui/scripts/json-viewer-benchmark.tsx` |
-| Config | `BUN_CONFIG=libs/ui/scripts/benchmark.bunfig.toml` (isolates React 18 resolution in monorepo) |
+| Script | Removed: it depended on the retired test runtime |
+| Config | Archived measurement; no supported local benchmark command until an npm-compatible harness is added |
 | Raw output | `benchmark-results.json` (same directory) |
 
 **Caveats**
@@ -151,15 +151,10 @@ Legend: **Native** = library supports directly · **Shim** = wrapper adapter in 
 
 ## How to reproduce
 
+Generate fixtures from the repository root with:
+
 ```bash
-cd services/lso/web
-
-# Generate fixtures (once)
-bun libs/ui/scripts/generate-json-viewer-fixtures.mjs
-
-# Run benchmark
-BUN_CONFIG=libs/ui/scripts/benchmark.bunfig.toml bun libs/ui/scripts/json-viewer-benchmark.tsx
-
-# Results written to:
-# libs/ui/src/lib/json-viewer/benchmark-results.json
+node libs/ui/scripts/generate-json-viewer-fixtures.mjs
 ```
+
+The benchmark runner was removed because it depended on the retired test runtime. The recorded results remain for historical comparison.

@@ -1,5 +1,5 @@
 import { Label, Toggle, Select, Tooltip, cn } from "@humansignal/ui";
-import { Form, Input } from "apps/labelstudio/src/components/Form";
+import { Form, Input } from "../../../components/Form";
 import { IconDocument, IconSearch } from "@humansignal/icons";
 import { formatDistanceToNow } from "date-fns";
 import type { ForwardedRef } from "react";

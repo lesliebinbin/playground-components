@@ -1,98 +1,27 @@
-# Label Studio
+# Label Studio Web
 
-Label Studio is a complex, NX-managed project divided into three main components:
+Label Studio Web is a standalone npm monorepo for reusable Label Studio frontend libraries and static frontend surfaces. It does not contain the Label Studio Python/Django application.
 
-## [Main App (`apps/labelstudio`)][lso]
-This is the primary application that consolidates all frontend framework elements. It's the hub for integrating and managing the different libraries and functionalities of Label Studio.
+## Install
 
-## [Library - Label Studio Frontend (`libs/editor`)][lsf]
-Label Studio Frontend, developed with React and mobx-state-tree, is a robust frontend library tailored for data annotation. It's designed for seamless integration into your applications, providing a rich set of features for data handling and visualization. Customization and extensibility are core aspects, allowing for tailored annotation experiences.
+```sh
+npm ci
+```
 
-## [Library - Datamanager (`libs/datamanager`)][dm]
-Datamanager is an advanced tool specifically for data exploration within Label Studio. Key features include:
+## Frontend surfaces
 
-<img align="right" height="180" src="https://github.com/HumanSignal/label-studio/blob/develop/images/heartex_icon_opossum_green@2x.png?raw=true" />
+| Surface | Serve | Build |
+| --- | --- | --- |
+| Playground | `npm run playground:serve` | `npm run playground:build` |
+| Label Studio Frontend editor | `npm run lsf:serve` | `npm run lsf:build` |
+| Shared UI Storybook | `npm run storybook:serve` | `npm run storybook:build` |
 
-## Installation Instructions
+`npm run build` builds all three surfaces. `npm run lsf:serve-build` serves an already-built editor bundle with Node.
 
-1 - **Dependencies Installation:**
-- Execute `bun install --frozen-lockfile` to install all necessary dependencies.
+## Libraries and API hosts
 
-2 - **Environment Configuration (Optional for HMR):**
-- If you want to enable Hot Module Replacement (HMR), create an `.env` file in the root Label Studio directory.
-- Add the following configuration:
-  - `FRONTEND_HMR=true`: Enables Hot Module Replacement in Django.
+`libs/editor`, `libs/datamanager`, `libs/core`, and `libs/app-common` are reusable frontend libraries. Consumers that use their data-management, account, storage, or interactive-ML features must configure compatible API endpoints and authentication in their host application. The Playground and standalone editor build without a Label Studio backend.
 
-Optional configurations (defaults should work for most setups):
-  - `FRONTEND_HOSTNAME`: HMR server address (default: http://localhost:8010).
-  - `DJANGO_HOSTNAME`: Django server address (default: http://localhost:8080).
+## Tests
 
-If using Docker Compose with HMR:
-- Update the `env_file: .env` directive in `docker-compose.override.yml` under the app service.
-- Rerun the app or docker compose service from the project root for changes to take effect.
-
-To start the development server with HMR:
-- From the `web` directory: Run `bun run dev`
-- Or from the project root: Run `make frontend-dev`
-
-#### Custom Configuration for DataManager:
-- If you need to customize the configuration specifically for DataManager, follow these steps:
-  - Duplicate the `.env.example` file located in the DataManager directory and rename the copy to `.env`.
-  - Make your desired changes in this new `.env` file. The key configurations to consider are:
-      - `NX_API_GATEWAY`: Set this to your API root. For example, `http://localhost:8080/api/dm`.
-      - `LS_ACCESS_TOKEN`: This is the access token for Label Studio, which can be obtained from your Label Studio account page.
-- This process allows you to have a customized configuration for DataManager, separate from the default settings in the .env.local files.
-
-## Usage Instructions
-### Key Development and Build Commands
-- **Label Studio App:**
-    - `bun run ls:dev`: Build the main Label Studio app with Hot Module Reload for development.
-    - `bun run ls:watch`: Build the main Label Studio app continuously for development.
-    - `bun run ls:e2e`: Run end-to-end tests for the Label Studio app.
-    - `bun run ls:unit`: Run unit tests for the Label Studio app.
-- **Label Studio Frontend (Editor):**
-    - `bun run lsf:watch`: Continuously build the frontend editor.
-    - `bun run lsf:serve`: Run the frontend editor standalone.
-    - `bun run lsf:integration`: Run integration tests for the frontend editor.
-    - `bun run lsf:unit`: Run unit tests for the frontend editor.
-- **Datamanager**
-    - `bun run dm:watch`: Continuously build Datamanager.
-    - `bun run dm:unit`: Run unit tests for Datamanager.
-- **General**
-    - `bun run build`: Build all apps and libraries in the project.
-    - `bun run ui:serve`: Serve the Storybook instance for the shared UI library.
-    - `bun run test:e2e`: Run end-to-end tests for all apps and libraries.
-    - `bun run test:integration`: Run integration tests for all apps and libraries.
-    - `bun run test:unit`: Run unit tests for all apps and libraries.
-    - `bun run lint`: Run biome linter across all files with autofix.
-    - `bun run lint-css`: Run Biome CSS linter across all CSS files with autofix.
-
-### Git Hooks
-This project uses python `pre-commit` hooks to ensure code quality. To install the hooks, run `make configure-hooks` in the project root directory.
-This will install the hooks and run them on every pre-push to ensure pull requests will be aligned with linting for both python and javascript/typescript code.
-
-If for any reason you need to format or lint using the same `pre-commit` hooks directly, you can run `make fmt` or `make fmt-check` respectively from the project root directory.
-
-## Ecosystem
-
-| Project                          | Description |
-|----------------------------------|-|
-| [label-studio][lso]              | Server part, distributed as a pip package |
-| [label-studio-frontend][lsf]     | Frontend part, written in JavaScript and React, can be embedded into your application |
-| [label-studio-converter][lsc]    | Encode labels into the format of your favorite machine learning library |
-| [label-studio-transformers][lst] | Transformers library connected and configured for use with label studio |
-| [datamanager][dm]                | Data exploration tool for Label Studio |
-
-## License
-
-This software is licensed under the [Apache 2.0 LICENSE](../LICENSE) © [HumanSignal](https://www.humansignal.com/). 2020
-
-<img src="https://github.com/HumanSignal/label-studio/blob/develop/images/opossum_looking.png?raw=true" title="Hey everyone!" height="140" width="140" />
-
-[lsc]: https://github.com/HumanSignal/label-studio-converter
-[lst]: https://github.com/HumanSignal/label-studio-transformers
-
-[lsf]: libs/editor/README.md
-[dm]: libs/datamanager/README.md
-[lso]: apps/labelstudio/README.md
-
+The repository retains its historical unit-test source, which uses Bun's test APIs. The npm standalone workflow does not expose unit-test scripts because those tests cannot run under npm without a test-runner migration. Cypress editor integration tests remain available through `npm run lsf:integration`.

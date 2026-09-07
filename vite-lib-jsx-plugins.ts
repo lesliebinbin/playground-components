@@ -2,13 +2,11 @@ import { readFile, stat } from "node:fs/promises";
 import * as esbuild from "esbuild";
 import type { Plugin } from "vite";
 
-function pathLooksLikeLsoLibJs(id: string): boolean {
+function pathLooksLikeWorkspaceLibJs(id: string): boolean {
   const n = id.replace(/\\/g, "/");
   if (!/\.js$/.test(n)) return false;
   if (n.includes("/node_modules/")) return false;
-  // Must match any checkout location (`/opt/build/repo` on Netlify, arbitrary CI
-  // paths), not just working copies named `lso` or `label-studio`.
-  return /\/web\/libs\//.test(n);
+  return /\/libs\//.test(n);
 }
 
 function looksLikeJsxInJsSource(code: string): boolean {
@@ -45,7 +43,7 @@ export function jsxJsPlugin() {
     name: "jsx-js",
     enforce: "pre" as const,
     transform(code: string, id: string) {
-      if (!pathLooksLikeLsoLibJs(id)) return null;
+      if (!pathLooksLikeWorkspaceLibJs(id)) return null;
       if (!looksLikeJsxInJsSource(code)) return null;
       const out = transformJsWithAutomaticJsx(code, id);
       return out ? { code: out.code, map: out.map } : null;
@@ -65,8 +63,8 @@ export function optimizeDepsAutomaticJsxPlugin(): Plugin {
       if (!id.endsWith(".js")) return null;
       const p = id.replace(/\\/g, "/");
       const inNodeModules = p.includes("/node_modules/");
-      const inLsoLibs = p.includes("/web/libs/");
-      if (!inNodeModules && !inLsoLibs) return null;
+      const inWorkspaceLibs = p.includes("/libs/");
+      if (!inNodeModules && !inWorkspaceLibs) return null;
 
       try {
         const st = await stat(id);

@@ -1,3 +1,3 @@
 # frontend-test
 
-This library was generated with [Nx](https://nx.dev).
+Shared Cypress testing utilities for this standalone frontend monorepo.

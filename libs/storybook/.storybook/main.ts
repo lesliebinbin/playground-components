@@ -86,7 +86,7 @@ const config: StorybookConfig = {
     viteConfig.plugins.unshift(jsxJsPlugin());
     viteConfig.plugins.push(
       svgr({
-        include: ["**/libs/ui/**/*.svg", "**/apps/labelstudio/**/*.svg"],
+        include: ["**/libs/ui/**/*.svg"],
         svgrOptions: { ref: true, exportType: "named", namedExport: "ReactComponent", svgo: false },
       }),
     );
@@ -102,7 +102,7 @@ const config: StorybookConfig = {
     viteConfig.server = viteConfig.server ?? {};
     viteConfig.server.fs = viteConfig.server.fs ?? {};
     const existingAllow = viteConfig.server.fs.allow ?? [];
-    viteConfig.server.fs.allow = [...new Set([...existingAllow, root, path.resolve(root, "../..")])];
+    viteConfig.server.fs.allow = [...new Set([...existingAllow, root])];
 
     viteConfig.css = viteConfig.css ?? {};
     viteConfig.css.modules = {

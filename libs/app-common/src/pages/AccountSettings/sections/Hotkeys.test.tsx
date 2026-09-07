@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryHistory } from "history";
 import type { PropsWithChildren } from "react";
 import { Router } from "react-router-dom";
-import { leaveBlockerCallback } from "apps/labelstudio/src/components/LeaveBlocker/LeaveBlocker";
+import { leaveBlockerCallback } from "../../../components/LeaveBlocker/LeaveBlocker";
 import { HotkeysManager } from "./Hotkeys";
 
 interface ApiOptions {

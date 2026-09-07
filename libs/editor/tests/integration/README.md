@@ -8,21 +8,21 @@ To reproduce CI locally and debug in Cypress UI:
 
 **1. Build the editor (production standalone, same as CI)**
 
-From the `web/` directory:
+From the repository root:
 
 ```bash
-MODE=standalone bunx nx run editor:build:production
+npm run lsf:build
 ```
 
 **2. Serve the build on port 3000**
 
-In the same or another terminal, from `web/`:
+In the same or another terminal:
 
 ```bash
-bun libs/editor/server.mjs
+npm run lsf:serve-build
 ```
 
-(Uses the Bun static server in `libs/editor/server.mjs`; same as CI. Port `3000` by default, override with `PORT`.)
+(Uses the Node static server in `libs/editor/server.mjs`. Port `3000` by default; override with `PORT`.)
 
 Leave this running. Confirm in the browser: [http://localhost:3000](http://localhost:3000) should load the LSF app (and CSS).
 
@@ -31,7 +31,7 @@ Leave this running. Confirm in the browser: [http://localhost:3000](http://local
 In a second terminal, from `web/`:
 
 ```bash
-bun run lsf:integration:watch
+npm run lsf:integration:watch
 ```
 
 This opens the Cypress UI. Choose a spec and run it; tests will hit `http://localhost:3000` (baseUrl in config). You can step through, inspect the app, and see exactly what Cypress sees.
@@ -39,5 +39,5 @@ This opens the Cypress UI. Choose a spec and run it; tests will hit `http://loca
 To run headless (like CI) instead:
 
 ```bash
-bun run lsf:integration
+npm run lsf:integration
 ```

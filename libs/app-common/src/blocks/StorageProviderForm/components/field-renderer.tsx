@@ -1,7 +1,7 @@
 import type React from "react";
 import { Label, Toggle, Select } from "@humansignal/ui";
-import Counter from "apps/labelstudio/src/components/Form/Elements/Counter/Counter";
-import Input from "apps/labelstudio/src/components/Form/Elements/Input/Input";
+import Counter from "../../../components/Form/Elements/Counter/Counter";
+import Input from "../../../components/Form/Elements/Input/Input";
 import type { FieldDefinition } from "../types/common";
 import { isFieldRequired } from "../types/provider";
 

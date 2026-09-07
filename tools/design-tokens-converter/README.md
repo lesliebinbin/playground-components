@@ -17,11 +17,11 @@ This script converts Figma design tokens from the `design-tokens.json` format in
 
 ## How to Use
 
-1. Export design tokens from Figma as `design-tokens.json` and place it in the `label-studio/web/` directory (workspace root)
-2. Run the conversion script using NX:
+1. Export design tokens from Figma as `design-tokens.json` and place it in this repository's workspace root.
+2. Run the conversion script:
 
 ```bash
-nx design-tokens ui
+npm run design-tokens
 ```
 
 3. This will generate:
@@ -153,7 +153,7 @@ Because Tailwind utilities and the `Typography` component resolve through these 
 When you get updated design tokens from Figma:
 
 1. Replace the `design-tokens.json` file in the workspace root
-2. Run the NX command again: `nx design-tokens ui`
+2. Run `npm run design-tokens` again.
 3. The CSS and JavaScript files will be regenerated with the updated tokens 
 
 ## Known Issues

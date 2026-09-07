@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import * as PersonalInfoModule from "./PersonalInfo";
-import * as UnsavedChangesModule from "apps/labelstudio/src/pages/CreateProject/Config/UnsavedChanges";
+import * as UnsavedChangesModule from "../../../components/UnsavedChanges";
 import { useReportProfileDirty } from "../ProfileDirtyContext";
 
 const mockGetProfileExtras = mock(() => [] as React.FC[]);

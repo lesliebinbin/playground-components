@@ -9,7 +9,7 @@ import { useStorageApi } from "./hooks/useStorageApi";
 import { step1Schema, getProviderSchema } from "./schemas";
 import { addProvider } from "./providers";
 import type { ProviderConfig } from "./types/provider";
-import { InlineError } from "apps/labelstudio/src/components/Error/InlineError";
+import { InlineError } from "../../components/Error/InlineError";
 
 interface StorageProviderFormProps {
   onSubmit: () => void;

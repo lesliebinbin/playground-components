@@ -1,7 +1,5 @@
 # app-common
 
-This library was generated with [Nx](https://nx.dev).
+Shared application components for frontend hosts, including account and storage settings. Hosts using API-backed settings must provide compatible authentication and API configuration.
 
-## Running unit tests
-
-Run `bun run test:unit:app-common` to execute the unit tests via [Bun](https://bun.sh/docs/test/writing).
+Historical unit-test source remains in the repository, but it uses Bun test APIs and has no npm test command.
